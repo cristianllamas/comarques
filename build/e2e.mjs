@@ -9,17 +9,20 @@ import { rmSync } from 'node:fs';
 
 
 const PORT = 8731, DEBUG = 9333;
+// URL=https://... runs the same checks against the deployed site instead of a local one.
+const TARGET = process.env.URL || `http://localhost:${PORT}/`;
 const shots = !!process.env.SHOTS;
 
 // Always start from a clean profile: a leftover localStorage from the previous run
 // changes the first screen ("Continua" instead of "Comença") and the test drifts.
 rmSync('/tmp/comarques-e2e', { recursive: true, force: true });
 
-const server = spawn('python3', ['-m', 'http.server', String(PORT)], { cwd: 'docs', stdio: 'ignore' });
+const server = process.env.URL ? { kill() {} }
+  : spawn('python3', ['-m', 'http.server', String(PORT)], { cwd: 'docs', stdio: 'ignore' });
 const chrome = spawn('google-chrome', [
   '--headless=new', '--disable-gpu', '--no-sandbox', '--hide-scrollbars',
   `--remote-debugging-port=${DEBUG}`, '--window-size=420,940',
-  '--user-data-dir=/tmp/comarques-e2e', `http://localhost:${PORT}/`,
+  '--user-data-dir=/tmp/comarques-e2e', TARGET,
 ], { stdio: 'ignore' });
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
