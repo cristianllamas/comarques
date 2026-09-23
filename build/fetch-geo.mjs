@@ -107,6 +107,70 @@ function centroid(rings) {
   return a ? [+(x / a).toFixed(1), +(y / a).toFixed(1)] : [best[0][0], best[0][1]];
 }
 
+
+/**
+ * Best anchor point for a label: the point furthest from the comarca's own boundary
+ * ("pole of inaccessibility") rather than the centroid.
+ *
+ * For these 43 shapes every centroid does land inside its own comarca, so this is not
+ * about correctness — it is about room. A centroid can sit close to an edge or in a
+ * narrow waist, and the label then crosses the border and reads as belonging to the
+ * neighbour. This anchor maximises the clear space around the text.
+ *
+ * Coarse grid, then a local refinement around the winner. Exact enough for placing text
+ * and it runs once at build time.
+ */
+function labelAnchor(rings) {
+  const ring = rings.reduce((a, b) => (ringArea(b) > ringArea(a) ? b : a));
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const [x, y] of ring) {
+    if (x < x0) x0 = x; if (x > x1) x1 = x;
+    if (y < y0) y0 = y; if (y > y1) y1 = y;
+  }
+
+  const inside = (px, py) => {
+    let hit = false;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [xi, yi] = ring[i], [xj, yj] = ring[j];
+      if ((yi > py) !== (yj > py) && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi) hit = !hit;
+    }
+    return hit;
+  };
+
+  const edgeDist = (px, py) => {
+    let best = Infinity;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [xi, yi] = ring[i], [xj, yj] = ring[j];
+      const dx = xj - xi, dy = yj - yi;
+      const t = dx || dy ? Math.max(0, Math.min(1, ((px - xi) * dx + (py - yi) * dy) / (dx * dx + dy * dy))) : 0;
+      const d = Math.hypot(px - (xi + t * dx), py - (yi + t * dy));
+      if (d < best) best = d;
+    }
+    return best;
+  };
+
+  const scan = (ax0, ay0, ax1, ay1, n) => {
+    let best = null, bestD = -1;
+    for (let i = 0; i <= n; i++) {
+      for (let j = 0; j <= n; j++) {
+        const px = ax0 + ((ax1 - ax0) * i) / n;
+        const py = ay0 + ((ay1 - ay0) * j) / n;
+        if (!inside(px, py)) continue;
+        const d = edgeDist(px, py);
+        if (d > bestD) { bestD = d; best = [px, py]; }
+      }
+    }
+    return { best, bestD };
+  };
+
+  let { best, bestD } = scan(x0, y0, x1, y1, 40);
+  if (!best) return null;
+  const step = Math.max((x1 - x0), (y1 - y0)) / 40;
+  const fine = scan(best[0] - step, best[1] - step, best[0] + step, best[1] + step, 12);
+  if (fine.best && fine.bestD > bestD) best = fine.best;
+  return [+best[0].toFixed(1), +best[1].toFixed(1)];
+}
+
 function pointInRings(pt, rings) {
   let inside = false;
   for (const pts of rings) {
@@ -241,10 +305,17 @@ for (const c of com.out) {
 
 const EXPECTED = { Barcelona: 13, Girona: 8, Lleida: 12, Tarragona: 10 };
 
-const comarques = com.out.map((c) => ({
-  code: c.code, name: c.name, capital: c.capital, provincia: c.provincia,
-  provinciaNota: c.provinciaNota, centroid: c.centroid, d: toPath(c.rings),
-})).sort((a, b) => a.code.localeCompare(b.code));
+const comarques = com.out.map((c) => {
+  const area = c.rings.reduce((n, r) => n + ringArea(r), 0);
+  return {
+    code: c.code, name: c.name, capital: c.capital, provincia: c.provincia,
+    provinciaNota: c.provinciaNota, centroid: c.centroid,
+    // anchor for the study-map label, and area so bigger comarques win a collision
+    label: labelAnchor(c.rings) || c.centroid,
+    area: Math.round(area),
+    d: toPath(c.rings),
+  };
+}).sort((a, b) => a.code.localeCompare(b.code));
 
 const provincies = prov.out.map((p) => ({ code: p.code, name: p.name, d: toPath(p.rings) }));
 
@@ -289,6 +360,10 @@ written     docs/geo.js  (${(size / 1024).toFixed(0)} KB)`);
 
 let bad = 0;
 for (const c of comarques) {
+  const rings = com.out.find((x) => x.code === c.code).rings;
+  if (!pointInRings(c.label, rings)) {
+    console.warn(`!! ${c.name}: label anchor falls outside the comarca`); bad++;
+  }
   if (!c.capital) { console.warn(`!! ${c.name} has no capital`); bad++; }
   if (!c.provincia) { console.warn(`!! ${c.name} has no província`); bad++; }
 }

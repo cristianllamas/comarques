@@ -26,7 +26,12 @@ const chrome = spawn('google-chrome', [
 ], { stdio: 'ignore' });
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const bye = (code) => { chrome.kill(); server.kill(); process.exit(code); };
+const bye = (code) => { chrome.kill('SIGKILL'); server.kill('SIGKILL'); process.exit(code); };
+
+// A throw part-way through used to leave Chrome running, and the next run would then
+// silently attach to that stale browser showing the previous run's state.
+process.on('uncaughtException', (e) => { console.error('\ncrashed:', e?.message || e); bye(1); });
+process.on('unhandledRejection', (e) => { console.error('\nrejected:', e?.message || e); bye(1); });
 
 async function target() {
   for (let i = 0; i < 40; i++) {
@@ -139,9 +144,14 @@ for (let i = 0; i < 6; i++) {
 }
 await sleep(300);
 
+// Snapshot what Fase 1 touched: markStudied writes seen>0 without grading, so these six
+// keys are exactly the studied items.
+const studied = await evaluate(`Object.keys(JSON.parse(localStorage.getItem('comarques.v1')).items)`);
+
 console.log('\n4. Fase 2 — recorda');
 t = await text();
 check(/Recorda/i.test(t), 'quiz phase starts');
+check(studied.length === 6, `Fase 1 touched 6 items (got ${studied.length})`);
 await shot('4-quiz');
 
 // answer the first typed question deliberately wrong, three times, to walk the climb-down
@@ -167,8 +177,21 @@ if (kind === 'typed') {
   await sleep(200);
   check(/Era…|Molt bé/.test(await text()), 'the answer is shown after choosing');
 } else {
-  check(true, 'first question was a map question (skipping the typed climb-down)');
+  // map question: tap any comarca to get it graded
+  await evaluate(`(()=>{const svg=document.querySelector('svg.mapa.triable');
+    const p=svg.querySelector('path.comarca'); const r=p.getBoundingClientRect();
+    const o={bubbles:true,clientX:r.left+r.width/2,clientY:r.top+r.height/2,
+      pointerId:1,pointerType:'touch',isPrimary:true};
+    svg.dispatchEvent(new PointerEvent('pointerdown',o));
+    svg.dispatchEvent(new PointerEvent('pointerup',o));})()`);
+  await sleep(200);
+  check(true, 'first question was a map question');
 }
+
+const afterFirst = await evaluate(`Object.keys(JSON.parse(localStorage.getItem('comarques.v1')).items)`);
+const fresh = afterFirst.filter((k) => !studied.includes(k));
+check(fresh.length >= 1,
+  `Fase 2 questions a comarca Fase 1 did not show (${fresh.length} new item(s) graded)`);
 
 console.log('\n5. finish the session');
 // Answering everything wrong requeues each question, so a 12-question session can
@@ -207,7 +230,66 @@ if (!/Sessió acabada/.test(t)) {
 }
 await shot('8-summary');
 
-console.log('\n6. progress persists');
+console.log('\n6. study map');
+await clickText('Inici');
+await sleep(250);
+check(await clickText('Mira el mapa') === 'ok', 'study map opens from home');
+await sleep(600);
+const labels = await evaluate('document.querySelectorAll("svg.mapa text.etiqueta").length');
+check(labels > 0, `labels are drawn (${labels} shown at full extent)`);
+check(labels < 43, `labels are decluttered, not all ${43} crammed on (${labels} shown)`);
+t = await text();
+check(/noms/.test(t), 'the counter explains how many names are visible');
+check(await evaluate(`[...document.querySelectorAll('svg.mapa text.etiqueta tspan')]
+  .some(x=>x.classList.contains('cap'))`), 'labels include the capital, not just the comarca');
+
+// No label may extend past the viewBox — the SVG clips there, which silently chops the
+// last letter off names like "ALT EMPORDÀ".
+const clipped = await evaluate(`(()=>{
+  const svg=document.querySelector('svg.mapa');
+  const [vx,vy,vw,vh]=svg.getAttribute('viewBox').split(' ').map(Number);
+  return [...svg.querySelectorAll('text.etiqueta')].filter(t=>{
+    const b=t.getBBox();
+    return b.x < vx-0.5 || b.y < vy-0.5 || b.x+b.width > vx+vw+0.5 || b.y+b.height > vy+vh+0.5;
+  }).map(t=>t.textContent);})()`);
+check(clipped.length === 0, `no label is clipped by the map edge${clipped.length ? ' — ' + clipped.join(', ') : ''}`);
+await shot('9-studymap');
+
+// Zooming in must label a larger *share* of what is on screen. Comparing raw counts is
+// wrong: zooming in also removes comarques from view, so the total drops too.
+const ratio = async () => {
+  const m = String(await text()).match(/Es veuen (\d+) de (\d+)|tots (\d+)/);
+  if (!m) return null;
+  return m[3] ? 1 : Number(m[1]) / Number(m[2]);
+};
+const before = await ratio();
+// one wheel tick is only a 13% zoom; take several so space genuinely frees up
+await evaluate(`(()=>{const svg=document.querySelector('svg.mapa');
+  const r=svg.getBoundingClientRect();
+  for(let i=0;i<8;i++) svg.dispatchEvent(new WheelEvent('wheel',{deltaY:-240,
+    clientX:r.left+r.width/2,clientY:r.top+r.height/2,bubbles:true,cancelable:true}));})()`);
+await sleep(500);
+const after = await ratio();
+check(after > before,
+  `zooming in labels a bigger share of what is on screen `
+  + `(${Math.round(before * 100)}% -> ${Math.round(after * 100)}%)`);
+await shot('10-studymap-zoom');
+
+// tapping a comarca shows its card, and must NOT feed the scheduler
+const itemsBefore = await evaluate(`Object.keys(JSON.parse(localStorage.getItem('comarques.v1')).items).length`);
+await evaluate(`(()=>{const svg=document.querySelector('svg.mapa.triable');
+  const p=svg.querySelector('path.comarca'); const r=p.getBoundingClientRect();
+  const o={bubbles:true,clientX:r.left+r.width/2,clientY:r.top+r.height/2,
+    pointerId:1,pointerType:'touch',isPrimary:true};
+  svg.dispatchEvent(new PointerEvent('pointerdown',o));
+  svg.dispatchEvent(new PointerEvent('pointerup',o));})()`);
+await sleep(300);
+check(/Capital:/.test(await text()), 'tapping a comarca shows its card');
+const itemsAfter = await evaluate(`Object.keys(JSON.parse(localStorage.getItem('comarques.v1')).items).length`);
+check(itemsAfter === itemsBefore, 'browsing the study map does not touch the scheduler');
+await shot('11-studymap-card');
+
+console.log('\n7. progress persists');
 const saved = await evaluate('JSON.parse(localStorage.getItem("comarques.v1")||"{}")');
 check(saved && Object.keys(saved.items || {}).length > 0,
   `progress written to localStorage (${Object.keys(saved?.items || {}).length} items)`);

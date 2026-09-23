@@ -13,6 +13,17 @@ Each session is two phases:
 2. **Recorda** — twelve questions. Four types: tap the comarca on a blank map, name a
    highlighted shape, give a comarca's capital, and name the comarca from its capital.
 
+The two phases work on **different** comarques. Testing what was just shown measures
+short-term memory more than it builds long-term memory; what he studies now comes back
+for testing in a later session, which the scheduler arranges by itself.
+
+There is also a third mode, **Mira el mapa**: the whole map with the comarca and capital
+written on each shape, for studying at his own pace. All 43 names cannot fit on a phone
+at once, so labels are placed largest-comarca-first and anything that would collide is
+dropped — zoom in and the rest appear. Where a full label will not fit, the comarca name
+is shown on its own rather than nothing. Browsing here deliberately does not feed the
+scheduler: looking is not retrieval, and counting it would inflate "dominades".
+
 Typed answers come first because producing an answer is what makes retrieval practice
 work. A wrong answer is not a dead end — it climbs down through a hint, then the first
 letter, then four options, so the effort is always made but never ends in failure.

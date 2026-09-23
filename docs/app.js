@@ -77,12 +77,17 @@ function screenHome() {
   go.onclick = startSession;
   wrap.append(go);
 
+  const look = h('button', 'secundari', 'Mira el mapa');
+  look.onclick = () => render(screenStudyMap());
+  wrap.append(look);
+
   const cfg = h('button', 'discret', 'Opcions');
   cfg.onclick = () => render(screenSettings());
   wrap.append(cfg);
 
   wrap.append(mapa.element);
   mapa.enablePicking(false);
+  mapa.showLabels(false);
   mapa.clearMarks();
   mapa.reset();
   return wrap;
@@ -132,6 +137,69 @@ function screenSettings() {
   return wrap;
 }
 
+
+/**
+ * Free study: the whole map with the names on it, at his own pace.
+ *
+ * Deliberately does not touch the scheduler. Browsing is not retrieval, and counting it
+ * as practice would inflate "dominades" and starve the items he actually cannot do.
+ */
+function screenStudyMap() {
+  const wrap = h('div', 'pantalla');
+  wrap.append(h('p', 'fase', 'Mapa d’estudi'));
+
+  mapa.clearMarks();
+  mapa.reset();
+  wrap.append(mapa.element);
+
+  const comptador = h('p', 'sub', '');
+  const fitxa = h('div', 'fitxa buida');
+  fitxa.innerHTML = '<p class="sub">Toca una comarca per veure-la de prop.</p>';
+
+  mapa.onLabels = (shown, total) => {
+    comptador.innerHTML = shown < total
+      ? `Es veuen <b>${shown}</b> de ${total} noms. Fes zoom amb dos dits per veure’n més.`
+      : `Es veuen tots <b>${total}</b> els noms.`;
+  };
+
+  mapa.enablePicking(true);
+  mapa.onPick = (code) => {
+    const c = byCode.get(code);
+    if (!c) return;
+    mapa.clearMarks();
+    mapa.mark(code, 'destacat');
+    mapa.raise(code, 'destacat');
+    const hook = HINTS[code]?.hook;
+    fitxa.className = 'fitxa';
+    fitxa.innerHTML =
+      `<h2>${c.name}</h2>`
+      + `<p class="capital">Capital: <b>${c.capital}</b></p>`
+      + (hook ? `<p class="pista">${hook}</p>` : '')
+      + `<p class="prov">Província: ${c.provincia}`
+      + (c.provinciaNota ? ` <span class="nota">(${c.provinciaNota})</span>` : '') + '</p>';
+    const ph = photoFor(code);
+    if (ph) fitxa.append(ph);
+  };
+
+  wrap.append(comptador, fitxa);
+
+  const zoomOut = h('button', 'secundari', 'Torna a veure-ho tot');
+  zoomOut.onclick = () => { mapa.reset(); mapa.clearMarks(); };
+  wrap.append(zoomOut);
+
+  const home = h('button', 'discret', 'Inici');
+  home.onclick = () => {
+    mapa.showLabels(false);
+    mapa.onLabels = null;
+    mapa.onPick = null;
+    render(screenHome());
+  };
+  wrap.append(home);
+
+  afterRender = () => mapa.showLabels(true, !state.includeLlucanes);
+  return wrap;
+}
+
 // ---------------------------------------------------------------- session
 
 function startSession() {
@@ -143,8 +211,12 @@ function startSession() {
     ? selectExamMode(state, codes, QUIZ_CARDS)
     : selectDue(state, codes, STUDY_CARDS + QUIZ_CARDS, now);
 
+  // Fase 1 and Fase 2 work on *different* comarques. Testing what he has just been shown
+  // measures short-term memory more than it builds long-term memory; the spacing effect
+  // says the test should come later. What he studies now gets tested in a later session,
+  // which the scheduler arranges on its own — these items are due again in 20 minutes.
   const study = hard ? [] : picks.slice(0, STUDY_CARDS);
-  const quizEntries = hard ? picks : picks.slice(0, QUIZ_CARDS);
+  const quizEntries = hard ? picks : picks.slice(STUDY_CARDS, STUDY_CARDS + QUIZ_CARDS);
 
   session = {
     study, i: 0,
@@ -378,6 +450,7 @@ function render(screen) {
 }
 
 mapa = new Mapa({});
+window.addEventListener('resize', () => mapa.refresh());
 mapa.setMerged(!state.includeLlucanes);
 render(screenHome());
 
