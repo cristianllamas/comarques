@@ -1,13 +1,93 @@
-:root{--bg:#f6f3ec;--ink:#22201c;--line:#8a8578;--fill:#e2ddd1;--prov:#1b3a5c;--accent:#f2c14e}
+/* Feedback colours are blue/orange rather than green/red so they still read for
+   red-green colour blindness, and every state also carries a word, not just a hue. */
+:root{
+  --bg:#f6f3ec; --card:#fffdf8; --ink:#22201c; --fade:#7a766d;
+  --line:#8a8578; --fill:#e2ddd1; --prov:#1b3a5c;
+  --be:#1f6f8b; --be-bg:#e3f0f5;
+  --mal:#c1670c; --mal-bg:#fbeadb;
+  --accent:#1b3a5c;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#16151a; --card:#201f26; --ink:#eceae4; --fade:#9b968c;
+    --line:#6f6a60; --fill:#3a3741; --prov:#9ec7e8;
+    --be:#7fc4dd; --be-bg:#17323c;
+    --mal:#eb9c4d; --mal-bg:#3a2714;
+    --accent:#9ec7e8;
+  }
+}
 *{box-sizing:border-box}
+html,body{overscroll-behavior:none}
 body{margin:0;background:var(--bg);color:var(--ink);
   font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  -webkit-text-size-adjust:100%}
+  -webkit-text-size-adjust:100%;padding-bottom:env(safe-area-inset-bottom)}
 #app{max-width:560px;margin:0 auto;padding:16px}
-.boot{text-align:center;color:#7a766d;padding:48px 0}
+.pantalla{display:flex;flex-direction:column;gap:12px}
+h1{font-size:1.5rem;margin:4px 0}
+h2{font-size:1.35rem;margin:0}
+.sub,.nota,.ajuda{color:var(--fade);margin:0;font-size:.92rem}
+.nota{font-size:.85rem}
+.fase{font-size:.8rem;letter-spacing:.09em;text-transform:uppercase;color:var(--fade);margin:0}
+
+/* map ------------------------------------------------------------------ */
 svg.mapa{width:100%;height:auto;display:block;touch-action:none;
-  background:#eee9df;border-radius:12px}
+  background:var(--card);border-radius:12px;border:1px solid rgba(128,128,128,.22)}
+svg.mapa.triable{cursor:crosshair}
 svg.mapa .comarca{fill:var(--fill);stroke:var(--line);stroke-width:1;
   stroke-linejoin:round;vector-effect:non-scaling-stroke}
 svg.mapa .provincia{fill:none;stroke:var(--prov);stroke-width:3;
   stroke-linejoin:round;vector-effect:non-scaling-stroke;pointer-events:none}
+svg.mapa .destacat{fill:var(--accent);fill-opacity:.55;stroke:var(--accent);stroke-width:2}
+svg.mapa .correcte{fill:var(--be);fill-opacity:.7;stroke:var(--be);stroke-width:2}
+svg.mapa .error{fill:var(--mal);fill-opacity:.6;stroke:var(--mal);stroke-width:2}
+
+/* cards & text --------------------------------------------------------- */
+.fitxa{background:var(--card);border:1px solid rgba(128,128,128,.22);
+  border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.capital{margin:0;font-size:1.05rem}
+.prov{margin:0;font-size:.88rem;color:var(--fade)}
+.pista{margin:0;font-size:.95rem;font-style:italic;color:var(--fade)}
+.pregunta{font-size:1.2rem;margin:4px 0;line-height:1.35}
+img.foto{width:100%;border-radius:8px;display:block;aspect-ratio:4/3;object-fit:cover}
+
+/* input ---------------------------------------------------------------- */
+.entrada{display:flex;gap:8px}
+.entrada input{flex:1;min-width:0;font-size:1.05rem;padding:12px;border-radius:10px;
+  border:1.5px solid rgba(128,128,128,.4);background:var(--card);color:var(--ink)}
+.entrada input:focus{outline:2px solid var(--accent);outline-offset:1px}
+button{font:inherit;cursor:pointer;border-radius:10px;padding:12px 16px;border:0}
+.primari{background:var(--accent);color:var(--bg);font-weight:600}
+.discret{background:none;color:var(--fade);text-decoration:underline;padding:8px}
+.perill{color:var(--mal)}
+.opcions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.opcio{background:var(--card);border:1.5px solid rgba(128,128,128,.4);color:var(--ink);
+  padding:14px 10px;font-size:.98rem}
+.opcio.bo{border-color:var(--be);background:var(--be-bg)}
+.opcio.dolent{border-color:var(--mal);background:var(--mal-bg)}
+.mascara{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;
+  font-size:1.05rem}
+
+/* feedback ------------------------------------------------------------- */
+.resposta{border-radius:12px}
+.resposta.ajuda-rung{background:var(--card);padding:12px;
+  border:1px solid rgba(128,128,128,.22)}
+.resposta.be{background:var(--be-bg);padding:12px;border:1.5px solid var(--be)}
+.resposta.malament{background:var(--mal-bg);padding:12px;border:1.5px solid var(--mal)}
+.veredicte{margin:0 0 4px;font-weight:700}
+.resposta.be .veredicte{color:var(--be)}
+.resposta.malament .veredicte{color:var(--mal)}
+.solucio{margin:0;font-size:1.1rem}
+.extra{margin:6px 0 0;font-size:.92rem}
+
+/* progress ------------------------------------------------------------- */
+.barra{height:10px;background:rgba(128,128,128,.22);border-radius:99px;overflow:hidden}
+.barra span{display:block;height:100%;background:var(--accent);border-radius:99px;
+  transition:width .4s}
+.marcador{font-size:2.4rem;font-weight:700;margin:0;text-align:center}
+.repas{margin:0;padding-left:20px}
+.repas li{margin:3px 0}
+.camp{display:flex;flex-direction:column;gap:6px;font-size:.95rem}
+.camp input[type=date]{font:inherit;padding:10px;border-radius:10px;
+  border:1.5px solid rgba(128,128,128,.4);background:var(--card);color:var(--ink)}
+.interruptor{flex-direction:row;align-items:center;gap:10px}
+.interruptor input{width:22px;height:22px;accent-color:var(--accent)}

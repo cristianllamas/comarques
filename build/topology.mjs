@@ -128,20 +128,34 @@ export function buildTopology(features) {
       if (n < 3) return [];
       const sigs = r.map((p) => sig.get(key(p)));
 
-      // rotate so the ring starts at a cut, if it has one
-      let start = -1;
-      for (let i = 0; i < n; i++) if (sigs[i] !== sigs[(i - 1 + n) % n]) { start = i; break; }
-      if (start === -1) return [addArc([...r, r[0]])]; // no cut: whole ring is one arc
+      // A point is a junction when it sits at either end of a run of equal signature,
+      // i.e. where a shared border starts or stops being shared. Arcs then run from one
+      // junction to the next *inclusive*, so both neighbours describe the border between
+      // them with exactly the same endpoints and it deduplicates to a single arc.
+      //
+      // (Cutting one point past the change instead — which is what this did first —
+      // gives each neighbour a different last point, nothing ever matches, and every
+      // border silently ends up stored and drawn twice.)
+      const junctions = [];
+      for (let i = 0; i < n; i++) {
+        if (sigs[i] !== sigs[(i - 1 + n) % n] || sigs[i] !== sigs[(i + 1) % n]) junctions.push(i);
+      }
+
+      if (junctions.length === 0) return [addArc([...r, r[0]])]; // ring shared by nobody
+
+      if (junctions.length === 1) { // one junction: a single arc closing on itself
+        const a = junctions[0];
+        const pts = [];
+        for (let k = 0; k <= n; k++) pts.push(r[(a + k) % n]);
+        return [addArc(pts)];
+      }
 
       const out = [];
-      let cur = [r[start]];
-      for (let j = 1; j <= n; j++) {
-        const i = (start + j) % n;
-        cur.push(r[i]);
-        if (j === n || sigs[i] !== sigs[(i - 1 + n) % n]) {
-          if (cur.length >= 2) out.push(addArc(cur));
-          cur = [r[i]];
-        }
+      for (let t = 0; t < junctions.length; t++) {
+        const a = junctions[t], b = junctions[(t + 1) % junctions.length];
+        const pts = [r[a]];
+        for (let i = a; i !== b; ) { i = (i + 1) % n; pts.push(r[i]); }
+        if (pts.length >= 2) out.push(addArc(pts));
       }
       return out;
     })),
