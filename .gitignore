@@ -1,0 +1,3 @@
+# 25 MB of raw source geometry — re-downloaded by build/fetch-geo.mjs on demand
+data/*.raw.geojson
+node_modules/

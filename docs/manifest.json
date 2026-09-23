@@ -1,0 +1,13 @@
+{
+  "name": "Comarques de Catalunya",
+  "short_name": "Comarques",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f6f3ec",
+  "theme_color": "#1b3a5c",
+  "lang": "ca",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
