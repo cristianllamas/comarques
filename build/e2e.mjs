@@ -61,7 +61,9 @@ ws.onmessage = (ev) => {
       || m.params.exceptionDetails.text));
   if (m.method === 'Runtime.consoleAPICalled' && m.params.type === 'error')
     problems.push('console.error: ' + m.params.args.map((a) => a.value ?? a.description).join(' '));
-  if (m.method === 'Log.entryAdded' && m.params.entry.level === 'error')
+  // The Cloudflare beacon's report is refused off the real origin (localhost), by design.
+  if (m.method === 'Log.entryAdded' && m.params.entry.level === 'error'
+      && !/cloudflareinsights\.com/.test(m.params.entry.text + m.params.entry.url))
     problems.push('log: ' + m.params.entry.text + ' ' + (m.params.entry.url || ''));
 };
 

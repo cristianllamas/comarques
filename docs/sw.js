@@ -1,6 +1,6 @@
 // Offline cache. Everything is precached on install so the first tap after
 // "add to home screen" works on the bus with no signal.
-const CACHE = 'comarques-v3';
+const CACHE = 'comarques-v4';
 const FILES = [
   '.', 'index.html', 'styles.css', 'app.js', 'map.js', 'quiz.js', 'scheduler.js',
   'answer.js', 'store.js', 'geo.js', 'hints.js', 'photos.js', 'manifest.json', 'icon.svg',
@@ -20,7 +20,9 @@ self.addEventListener('activate', (e) => {
 
 // Cache-first, but always refresh in the background so a push to Pages reaches him.
 self.addEventListener('fetch', (e) => {
-  if (e.request.method !== 'GET') return;
+  // Same-origin only: third-party requests (the analytics beacon) go straight to the
+  // network, so they are never cached and fail silently offline.
+  if (e.request.method !== 'GET' || new URL(e.request.url).origin !== location.origin) return;
   e.respondWith(caches.match(e.request).then((hit) => {
     const net = fetch(e.request).then((res) => {
       if (res && res.ok) caches.open(CACHE).then((c) => c.put(e.request, res.clone()));
