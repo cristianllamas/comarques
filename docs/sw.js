@@ -1,6 +1,6 @@
 // Offline cache. Everything is precached on install so the first tap after
 // "add to home screen" works on the bus with no signal.
-const CACHE = 'comarques-v2';
+const CACHE = 'comarques-v3';
 const FILES = [
   '.', 'index.html', 'styles.css', 'app.js', 'map.js', 'quiz.js', 'scheduler.js',
   'answer.js', 'store.js', 'geo.js', 'hints.js', 'photos.js', 'manifest.json', 'icon.svg',
