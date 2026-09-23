@@ -52,6 +52,13 @@ Lluçanès was split off from Osona in 2023. Textbooks printed before then list 
 Osona — geometry included, so no stray border is left behind. Turn it on in *Opcions* if
 his syllabus includes it.
 
+## Changing it later
+
+See **[ARCHITECTURE.md](ARCHITECTURE.md)** — module map, the reasoning behind the
+non-obvious decisions, and the traps that cost real debugging time (detached `getBBox`,
+float coordinate comparison, cache-first service worker). `CLAUDE.md` is the short version
+for AI coding sessions.
+
 ## Building
 
 ```bash
