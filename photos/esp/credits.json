@@ -18,12 +18,12 @@
     "portrait": false
   },
   "ES21": {
-    "caption": "Plaça de la Verge Blanca · Vitòria",
-    "author": "Mariordo (Mario Roberto Duran Ortiz)",
-    "license": "CC BY-SA 3.0",
-    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Vitoria_05_2012_1809.JPG",
-    "file": "Vitoria 05 2012 1809.JPG",
+    "caption": "Museu Guggenheim · Bilbao",
+    "author": "José Ligero Loarte",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Museo_Guggenheim_--_2021_--_Bilbao,_Euskadi,_Espa%C3%B1a.jpg",
+    "file": "Museo Guggenheim -- 2021 -- Bilbao, Euskadi, España.jpg",
     "portrait": false
   },
   "ES22": {
@@ -63,21 +63,21 @@
     "portrait": false
   },
   "ES41": {
-    "caption": "Plaza Mayor · Valladolid",
-    "author": "Ángel",
-    "license": "CC BY 2.0",
-    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Plaza_Mayor_Valladolid1_edited.jpg",
-    "file": "Plaza Mayor Valladolid1 edited.jpg",
+    "caption": "Catedral · Lleó",
+    "author": "José Luiz",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Cathedral_of_Le%C3%B3n_-_West_facade_(2).JPG",
+    "file": "Cathedral of León - West facade (2).JPG",
     "portrait": false
   },
   "ES42": {
-    "caption": "L’Alcàsser i la ciutat · Toledo",
-    "author": "Carlos Delgado",
-    "license": "CC BY-SA 3.0 es",
-    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/es/deed.en",
-    "source": "https://commons.wikimedia.org/wiki/File:Alc%C3%A1zar_de_Toledo_-_01.jpg",
-    "file": "Alcázar de Toledo - 01.jpg",
+    "caption": "Cases Penjades · Conca",
+    "author": "Juan Manuel Monleón Antón",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Casas_Colgadas,_Cuenca,_Espa%C3%B1a.jpg",
+    "file": "Casas Colgadas, Cuenca, España.jpg",
     "portrait": false
   },
   "ES43": {
@@ -126,12 +126,12 @@
     "portrait": true
   },
   "ES62": {
-    "caption": "Catedral · Múrcia",
-    "author": "Fernando",
-    "license": "CC BY-SA 4.0",
-    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Murcia_2022_-_West_facade_1.jpg",
-    "file": "Murcia 2022 - West facade 1.jpg",
+    "caption": "La Manga i el Mar Menor, des de l’Estació Espacial",
+    "author": "Earth Science and Remote Sensing Unit, Lyndon B. Johnson Space Center",
+    "license": "Public domain",
+    "licenseUrl": null,
+    "source": "https://commons.wikimedia.org/wiki/File:ISS048-E-5924_-_View_of_Earth.jpg",
+    "file": "ISS048-E-5924 - View of Earth.jpg",
     "portrait": false
   },
   "ES63": {
@@ -162,12 +162,12 @@
     "portrait": false
   },
   "ES13": {
-    "caption": "Palau de la Magdalena · Santander",
-    "author": "Fernandopascullo",
-    "license": "CC BY 3.0",
-    "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Palacio_de_la_Magdalena.jpg",
-    "file": "Palacio de la Magdalena.jpg",
+    "caption": "Platja del Sardinero · Santander",
+    "author": "Carlos Cunha",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Playa_el_sardinero_santander_-_panoramio_(17).jpg",
+    "file": "Playa el sardinero santander - panoramio (17).jpg",
     "portrait": false
   }
 }

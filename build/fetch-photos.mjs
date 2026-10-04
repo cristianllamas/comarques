@@ -22,7 +22,8 @@ import { loadTopic } from '../docs/topics.js';
 
 // title: English Wikipedia article(s) for the landmark, tried in order.
 // caption: shown under the photo — always names the city, so a landmark outside the
-// capital (the Alhambra) is never mistaken for one in it.
+// capital (the Alhambra, the Guggenheim in Bilbao, León cathedral) is never mistaken
+// for one in it. Several of these were chosen by the reviewer over a capital landmark.
 const LANDMARKS = {
   ue: {
     DE: { title: 'Brandenburg Gate', caption: 'Porta de Brandenburg · Berlín' },
@@ -60,20 +61,23 @@ const LANDMARKS = {
   esp: {
     ES11: { title: 'Santiago de Compostela Cathedral', caption: 'Catedral · Santiago de Compostel·la' },
     ES12: { title: 'Oviedo Cathedral', caption: 'Catedral · Oviedo' },
-    ES13: { title: 'Magdalena Palace', caption: 'Palau de la Magdalena · Santander', file: 'Palacio de la Magdalena.jpg' },
-    ES21: { title: ['Plaza de la Virgen Blanca', 'Old Cathedral of Vitoria'], caption: 'Plaça de la Verge Blanca · Vitòria' },
+    ES13: { title: 'El Sardinero', caption: 'Platja del Sardinero · Santander',
+            file: 'Playa el sardinero santander - panoramio (17).jpg' },
+    ES21: { title: 'Guggenheim Museum Bilbao', caption: 'Museu Guggenheim · Bilbao',
+            file: 'Museo Guggenheim -- 2021 -- Bilbao, Euskadi, España.jpg' },
     ES22: { title: 'Pamplona Cathedral', caption: 'Catedral · Pamplona' },
     ES23: { title: ['Co-cathedral of Santa María de la Redonda', 'Logroño Cathedral'], caption: 'Concatedral de la Redonda · Logronyo' },
     ES24: { title: 'Basilica of Our Lady of the Pillar', caption: 'Basílica del Pilar · Saragossa' },
     ES30: { title: 'Puerta de Alcalá', caption: 'Puerta de Alcalá · Madrid' },
-    ES41: { title: ['Plaza Mayor, Valladolid', 'Plaza Mayor (Valladolid)', 'Valladolid Cathedral'], caption: 'Plaza Mayor · Valladolid' },
-    ES42: { title: 'Alcázar of Toledo', caption: 'L’Alcàsser i la ciutat · Toledo' },
+    ES41: { title: 'León Cathedral', caption: 'Catedral · Lleó', file: 'Cathedral of León - West facade (2).JPG' },
+    ES42: { title: 'Hanging Houses of Cuenca', caption: 'Cases Penjades · Conca', file: 'Casas Colgadas, Cuenca, España.jpg' },
     ES43: { title: 'Roman Theatre of Mérida', caption: 'Teatre romà · Mèrida' },
     ES51: { title: 'Sagrada Família', caption: 'Sagrada Família · Barcelona' },
     ES52: { title: 'City of Arts and Sciences', caption: 'Ciutat de les Arts i les Ciències · València' },
     ES53: { title: 'Palma Cathedral', caption: 'La Seu · Palma' },
     ES61: { title: 'Giralda', caption: 'La Giralda · Sevilla' },
-    ES62: { title: 'Murcia Cathedral', caption: 'Catedral · Múrcia' },
+    ES62: { title: 'La Manga del Mar Menor', caption: 'La Manga i el Mar Menor, des de l’Estació Espacial',
+            file: 'ISS048-E-5924 - View of Earth.jpg' },
     ES63: { title: ['Royal Walls of Ceuta', 'Royal Walls'], caption: 'Muralles Reials · Ceuta' },
     ES64: { title: ['Melilla la Vieja', 'Old town of Melilla'], caption: 'Melilla la Vella · Melilla' },
     ES70: { title: 'Teide', caption: 'El Teide · Tenerife' },

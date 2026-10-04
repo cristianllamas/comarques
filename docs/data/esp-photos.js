@@ -66,10 +66,10 @@ export const CREDITS = {
     "source": "https://commons.wikimedia.org/wiki/File:Ancient_Roman_theatre_in_M%C3%A9rida_2023.jpg"
   },
   "ES62": {
-    "caption": "Catedral · Múrcia",
-    "author": "Fernando",
-    "license": "CC BY-SA 4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Murcia_2022_-_West_facade_1.jpg"
+    "caption": "La Manga i el Mar Menor, des de l’Estació Espacial",
+    "author": "Earth Science and Remote Sensing Unit, Lyndon B. Johnson Space Center",
+    "license": "Public domain",
+    "source": "https://commons.wikimedia.org/wiki/File:ISS048-E-5924_-_View_of_Earth.jpg"
   },
   "ES12": {
     "caption": "Catedral · Oviedo",
@@ -90,10 +90,10 @@ export const CREDITS = {
     "source": "https://commons.wikimedia.org/wiki/File:Pamplona_2022_-_west_facade_front.jpg"
   },
   "ES13": {
-    "caption": "Palau de la Magdalena · Santander",
-    "author": "Fernandopascullo",
-    "license": "CC BY 3.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Palacio_de_la_Magdalena.jpg"
+    "caption": "Platja del Sardinero · Santander",
+    "author": "Carlos Cunha",
+    "license": "CC BY-SA 3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Playa_el_sardinero_santander_-_panoramio_(17).jpg"
   },
   "ES11": {
     "caption": "Catedral · Santiago de Compostel·la",
@@ -114,16 +114,16 @@ export const CREDITS = {
     "source": "https://commons.wikimedia.org/wiki/File:Giralda_de_Sevilla_(3).jpg"
   },
   "ES42": {
-    "caption": "L’Alcàsser i la ciutat · Toledo",
-    "author": "Carlos Delgado",
-    "license": "CC BY-SA 3.0 es",
-    "source": "https://commons.wikimedia.org/wiki/File:Alc%C3%A1zar_de_Toledo_-_01.jpg"
+    "caption": "Cases Penjades · Conca",
+    "author": "Juan Manuel Monleón Antón",
+    "license": "CC BY-SA 3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Casas_Colgadas,_Cuenca,_Espa%C3%B1a.jpg"
   },
   "ES41": {
-    "caption": "Plaza Mayor · Valladolid",
-    "author": "Ángel",
-    "license": "CC BY 2.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Plaza_Mayor_Valladolid1_edited.jpg"
+    "caption": "Catedral · Lleó",
+    "author": "José Luiz",
+    "license": "CC BY-SA 3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Cathedral_of_Le%C3%B3n_-_West_facade_(2).JPG"
   },
   "ES52": {
     "caption": "Ciutat de les Arts i les Ciències · València",
@@ -132,9 +132,9 @@ export const CREDITS = {
     "source": "https://commons.wikimedia.org/wiki/File:Valencia,_Ciudad_de_las_Ciencias_y_de_las_Artes.jpg"
   },
   "ES21": {
-    "caption": "Plaça de la Verge Blanca · Vitòria",
-    "author": "Mariordo (Mario Roberto Duran Ortiz)",
-    "license": "CC BY-SA 3.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Vitoria_05_2012_1809.JPG"
+    "caption": "Museu Guggenheim · Bilbao",
+    "author": "José Ligero Loarte",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Museo_Guggenheim_--_2021_--_Bilbao,_Euskadi,_Espa%C3%B1a.jpg"
   }
 };
