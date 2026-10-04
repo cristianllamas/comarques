@@ -10,6 +10,9 @@
 // Writes photos/<topic>/<capital>.jpg and photos/<topic>/credits.json. Then run
 // scan-photos.mjs, which resizes them into docs/ and ships the credits with them.
 //
+// `retall: 'cap'` shows that photo whole instead of cropped to 4:3 — for a tall photo
+// whose bottom matters (León cathedral with the square in front of it).
+//
 // Existing files are kept; FORCE=1 refetches. To replace a rejected photo, set `file`
 // on its entry to a specific Commons file name — an entry whose `file` no longer matches
 // what was fetched is refetched automatically. The pinned files below replaced
@@ -69,7 +72,8 @@ const LANDMARKS = {
     ES23: { title: ['Co-cathedral of Santa María de la Redonda', 'Logroño Cathedral'], caption: 'Concatedral de la Redonda · Logronyo' },
     ES24: { title: 'Basilica of Our Lady of the Pillar', caption: 'Basílica del Pilar · Saragossa' },
     ES30: { title: 'Puerta de Alcalá', caption: 'Puerta de Alcalá · Madrid' },
-    ES41: { title: 'León Cathedral', caption: 'Catedral · Lleó', file: 'Cathedral of León - West facade (2).JPG' },
+    ES41: { title: 'León Cathedral', caption: 'Catedral i plaça de Regla · Lleó', file: 'Catedral Gótica de León.jpg',
+            retall: 'cap' },
     ES42: { title: 'Hanging Houses of Cuenca', caption: 'Cases Penjades · Conca', file: 'Casas Colgadas, Cuenca, España.jpg' },
     ES43: { title: 'Roman Theatre of Mérida', caption: 'Teatre romà · Mèrida' },
     ES51: { title: 'Sagrada Família', caption: 'Sagrada Família · Barcelona' },
@@ -157,6 +161,7 @@ for (const [code, spec] of Object.entries(LANDMARKS[TOPIC])) {
   if (existsSync(out) && credits[code] && !stale && !process.env.FORCE) {
     // The caption always follows the table, so correcting one needs no refetch.
     credits[code].caption = spec.caption;
+    credits[code].retall = spec.retall;
     console.log(`  keep  ${code} ${out}`);
     continue;
   }
@@ -182,7 +187,7 @@ for (const [code, spec] of Object.entries(LANDMARKS[TOPIC])) {
   writeFileSync(out, Buffer.from(await res.arrayBuffer()));
   credits[code] = {
     caption: spec.caption, author: pick.author, license: pick.license,
-    licenseUrl: pick.licenseUrl, source: pick.page, file: pick.file,
+    licenseUrl: pick.licenseUrl, source: pick.page, file: pick.file, retall: spec.retall,
     portrait: pick.width < pick.height,
   };
   console.log(`  got   ${code} ${pick.width}x${pick.height} ${pick.license.padEnd(14)} ${pick.file}`);

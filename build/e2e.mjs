@@ -162,7 +162,8 @@ console.log('\n1. pack picker');
 let t = await text();
 check(/Estudia geografia/i.test(t), 'title renders');
 check(/Què vols estudiar/.test(t), 'a new device starts on the pack picker');
-check(await evaluate('document.querySelectorAll("button.tema").length') >= 2, 'packs are listed');
+check(await evaluate(`[...document.querySelectorAll('.tema-titol')].map(x=>x.textContent).join(' | ')`)
+  === 'Comarques i capitals | Comarques | Comunitats autònomes | Unió Europea', 'packs are listed in the agreed order');
 await shot('0-packs');
 check(await clickPack('Comarques i capitals') === 'ok', 'choosing a pack');
 await sleep(600);
@@ -461,6 +462,16 @@ t = await text();
 check(/Canàries/.test(t) && /Capitals: Las Palmas de Gran Canaria i Santa Cruz de Tenerife/.test(t),
   'Canàries: tapping the inset works and the card names both capitals');
 await shot('23-esp-canaries');
+await tapCode('ES41');
+await sleep(800);
+check(await evaluate(`(()=>{const i=document.querySelector('.fitxa img.foto.sencera');
+  if(!i||!i.naturalWidth) return false;
+  const r=i.getBoundingClientRect();   // shown whole: rendered shape matches the photo's
+  return Math.abs(r.width/r.height - i.naturalWidth/i.naturalHeight) < 0.02;})()`),
+  'León cathedral photo is shown whole, square included');
+await evaluate(`document.querySelector('.fitxa').scrollIntoView()`);
+await sleep(200);
+await shot('24-esp-leon');
 
 console.log('\n12. progress from the comarques-only app is carried over');
 await evaluate(`(()=>{localStorage.clear();

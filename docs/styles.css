@@ -61,6 +61,8 @@ svg.mapa .error{fill:var(--mal);fill-opacity:.6;stroke:var(--mal);stroke-width:2
    the tower — the part that makes a landmark recognisable. */
 img.foto{width:100%;border-radius:8px;display:block;aspect-ratio:4/3;object-fit:cover;
   object-position:50% 15%}
+/* A few tall photos are shown whole, because what matters is at the bottom too. */
+img.foto.sencera{aspect-ratio:auto;object-fit:contain;max-height:70vh;margin:0 auto;width:auto;max-width:100%}
 .foto-amb-peu{margin:0}
 .foto-amb-peu figcaption{font-size:.75rem;color:var(--fade);margin-top:4px;line-height:1.3}
 .foto-amb-peu figcaption a{color:inherit}

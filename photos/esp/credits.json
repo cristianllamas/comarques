@@ -63,13 +63,14 @@
     "portrait": false
   },
   "ES41": {
-    "caption": "Catedral · Lleó",
-    "author": "José Luiz",
+    "caption": "Catedral i plaça de Regla · Lleó",
+    "author": "David Jiménez Llanes",
     "license": "CC BY-SA 3.0",
     "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Cathedral_of_Le%C3%B3n_-_West_facade_(2).JPG",
-    "file": "Cathedral of León - West facade (2).JPG",
-    "portrait": false
+    "source": "https://commons.wikimedia.org/wiki/File:Catedral_G%C3%B3tica_de_Le%C3%B3n.jpg",
+    "file": "Catedral Gótica de León.jpg",
+    "retall": "cap",
+    "portrait": true
   },
   "ES42": {
     "caption": "Cases Penjades · Conca",

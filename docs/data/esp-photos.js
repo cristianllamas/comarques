@@ -120,10 +120,11 @@ export const CREDITS = {
     "source": "https://commons.wikimedia.org/wiki/File:Casas_Colgadas,_Cuenca,_Espa%C3%B1a.jpg"
   },
   "ES41": {
-    "caption": "Catedral · Lleó",
-    "author": "José Luiz",
+    "caption": "Catedral i plaça de Regla · Lleó",
+    "author": "David Jiménez Llanes",
     "license": "CC BY-SA 3.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Cathedral_of_Le%C3%B3n_-_West_facade_(2).JPG"
+    "source": "https://commons.wikimedia.org/wiki/File:Catedral_G%C3%B3tica_de_Le%C3%B3n.jpg",
+    "retall": "cap"
   },
   "ES52": {
     "caption": "Ciutat de les Arts i les Ciències · València",

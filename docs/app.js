@@ -53,6 +53,7 @@ function photoFor(code) {
   // Photos from Wikimedia Commons carry a caption — which always names the city, so a
   // landmark outside the capital (the Alhambra) is never taken for one in it — and the
   // author and licence the licence requires.
+  if (c.retall === 'cap') img.classList.add('sencera');
   const fig = h('figure', 'foto-amb-peu');
   const cap = h('figcaption');
   cap.append(c.caption + ' · ');

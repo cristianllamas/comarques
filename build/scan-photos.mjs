@@ -82,7 +82,8 @@ const allCredits = existsSync(`${SRC}/credits.json`) ? JSON.parse(readFileSync(`
 const credits = {};
 for (const code of Object.keys(found)) {
   const c = allCredits[code];
-  if (c) credits[code] = { caption: c.caption, author: c.author, license: c.license, source: c.source };
+  if (c) credits[code] = { caption: c.caption, author: c.author, license: c.license, source: c.source,
+    ...(c.retall ? { retall: c.retall } : {}) };
 }
 
 writeFileSync(LIST,
