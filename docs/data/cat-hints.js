@@ -1,4 +1,4 @@
-// Hand-written memory hooks, one per comarca. Keyed by the comarca code used in geo.js.
+// Hand-written memory hooks, one per comarca. Keyed by the comarca code used in cat-geo.js.
 //
 // These are deliberately short and concrete — a landmark, a river, a thing the place is
 // known for. The point is to give the brain something to hang the name on, not to teach

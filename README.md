@@ -1,7 +1,9 @@
-# Comarques — study app
+# Estudia geografia — study app
 
-A small offline web app for learning the comarques of Catalunya and their capitals,
-built for a geography exam. Install it on a phone from
+A small offline web app for school geography, organised in **content packs**: the
+learner picks one on the first screen (*Comarques i capitals*, *Comarques*, *Unió
+Europea*, *Comunitats autònomes*), each with
+its own progress, and can switch with *Packs de contingut* in the header. Install it on a phone from
 **https://cristianllamas.github.io/comarques/** (Chrome → *Afegeix a la pantalla d'inici*).
 
 ## How it works
@@ -28,21 +30,28 @@ Typed answers come first because producing an answer is what makes retrieval pra
 work. A wrong answer is not a dead end — it climbs down through a hint, then the first
 letter, then four options, so the effort is always made but never ends in failure.
 
-Scheduling is **Leitner with intervals compressed to the exam window** (20 min → 2 h →
-8 h → 1 day → 2 days), not SM-2 or FSRS: those optimise six-month retention and would
-show most comarques once before the exam. Set the exam date in *Opcions* and nothing
-will ever be scheduled to reappear after it.
+Scheduling is **Leitner with short boxes** (20 min → 2 h → 8 h → 1 day → 2 days → 4 days
+→ 8 days), not SM-2 or FSRS: those optimise six-month retention and would show most
+places once in the week or two before a school exam. New items are introduced in a
+shuffled order (saved, so it does not change between visits), and a session never shows
+the same place twice.
 
-**Study 3–4 times a day.** `node build/sim-scheduler.mjs` simulates the week: at two
-sessions a day the material is not covered, at three it just is, and at six about 80% of
-it ends up solid.
+**Study 3–4 times a day.** `node build/sim-scheduler.mjs` simulates a week for every
+pack: for *Comarques i capitals*, two sessions a day do not cover the material and three
+just do; *Comarques* (half the items) is covered comfortably at two.
 
 ## Adding photos
 
-Drop image files into `photos/` and run `node build/scan-photos.mjs`. The filename can be
+For the EU and Comunitats packs, `node build/fetch-photos.mjs ue` (or `esp`) downloads a landmark photo per country
+from Wikimedia Commons, with the credit its licence requires (shown under the photo).
+The landmarks are listed in that script; pin a specific Commons file with `file:` to
+replace one. Then run `scan-photos` as below.
+
+Drop image files into `photos/<topic>/` (e.g. `photos/cat/`) and run
+`node build/scan-photos.mjs cat`. The filename can be
 the capital or the comarca, and accents, capitals, apostrophes, articles and hyphens are
 all ignored (`Berga.jpg`, `la-seu-durgell.jpg`, `Alt Empordà.png` all work). Originals are
-left alone; resized copies go to `docs/img/capitals/`. Capitals without a photo simply
+left alone; resized copies go to `docs/img/cat/`. Capitals without a photo simply
 render as text. See `photos/README.md`.
 
 ## 42 or 43 comarques?
@@ -62,18 +71,20 @@ for AI coding sessions.
 ## Building
 
 ```bash
-node build/fetch-geo.mjs      # official ICGC boundaries -> docs/geo.js
+node build/fetch-geo.mjs      # official ICGC boundaries -> docs/data/cat-geo.js
+node build/fetch-geo-ue.mjs   # Eurostat GISCO countries -> docs/data/ue-geo.js
+node build/fetch-geo-esp.mjs  # Eurostat GISCO NUTS-2 (Spain) -> docs/data/esp-geo.js
 node build/fetch-hints.mjs    # Catalan Wikipedia intros -> data/hints.raw.md (raw material)
-node build/scan-photos.mjs    # photos/ -> docs/img/capitals/ + docs/photos.js
+node build/scan-photos.mjs cat  # photos/cat/ -> docs/img/cat/ + docs/data/cat-photos.js
 ```
 
-`docs/hints.js` is hand-written and not generated — `fetch-hints.mjs` only produces the
+`docs/data/cat-hints.js` is hand-written and not generated — `fetch-hints.mjs` only produces the
 source material to write from.
 
 ### Checks
 
 ```bash
-node build/sim-scheduler.mjs  # simulates a week; asserts coverage and no post-exam scheduling
+node build/sim-scheduler.mjs  # simulates a week per pack; asserts coverage, no place twice a session
 node build/e2e.mjs            # drives the real app in headless Chrome; SHOTS=1 for screenshots
 ```
 

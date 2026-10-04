@@ -1,7 +1,9 @@
 # CLAUDE.md
 
-Study app for the comarques of Catalunya. Built for a specific deadline; correctness of
-the content matters more than polish.
+Geography study app ("Estudia geografia"): content packs for the comarques of
+Catalunya (with or without capitals), the EU member states and the comunitats
+autònomes of Spain, with their capitals. Correctness of the content matters
+more than polish.
 
 **Read `ARCHITECTURE.md` before changing anything.** It records why several
 non-obvious things are the way they are, and most of those entries were paid for with a
@@ -14,12 +16,12 @@ rule, or the deferred `afterRender` map focus without reading the corresponding 
   Plain ES modules that run by opening the page. Keep it that way.
 - **`docs/` is the published site** (GitHub Pages serves `/docs` on `main`). Pushing to
   `main` deploys. There is no staging.
-- **`docs/geo.js` and `docs/photos.js` are generated.** Edit the scripts in `build/`, not
-  the output. `docs/hints.js` is hand-written and *is* the right place for editorial
-  content.
+- **`docs/data/*-geo.js` and `docs/data/*-photos.js` are generated.** Edit the scripts in
+  `build/`, not the output. `docs/data/*-hints.js` are hand-written and *are* the right
+  place for editorial content.
 - **Catalan throughout** for anything user-facing. Comarca articles are irregular
   (*l'Alt Camp*, *el Berguedà*, *la Selva*, *les Garrigues*, and *Osona* takes none) and
-  live in the `art` field in `hints.js` — never derive them from the name.
+  live in the `art` field in the hints file — never derive them from the name.
 - **Bump `CACHE` in `docs/sw.js`** whenever a shipped file changes, or installed clients
   keep serving the old build.
 
@@ -42,10 +44,15 @@ URL=https://cristianllamas.github.io/comarques/ node build/e2e.mjs
 
 ## Content accuracy
 
-This teaches a child facts for an exam, so wrong data is worse than a missing feature.
+This teaches children facts for school exams, so wrong data is worse than a missing
+feature.
 The build asserts 43 comarques, every one with a capital and a província, and the
 per-província counts against the official table. If those fire, investigate rather than
 adjust the expectation.
+
+For the EU, `build/fetch-geo-ue.mjs` asserts 27 member states (from GISCO's `EU_STAT`
+flag) and that each one has a Catalan name, capital and article in `ue-hints.js`;
+`build/fetch-geo-esp.mjs` asserts 17 comunitats + Ceuta and Melilla, 17 with a capital.
 
 Two known subtleties, both handled — see `ARCHITECTURE.md`: Cerdanya straddles two
 províncies, and Lluçanès only exists as a comarca since 2023 (the app ships in 42-comarca
