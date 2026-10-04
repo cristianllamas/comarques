@@ -56,6 +56,9 @@ svg.mapa .error{fill:var(--mal);fill-opacity:.6;stroke:var(--mal);stroke-width:2
 .pista{margin:0;font-size:.95rem;font-style:italic;color:var(--fade)}
 .pregunta{font-size:1.2rem;margin:4px 0;line-height:1.35}
 img.foto{width:100%;border-radius:8px;display:block;aspect-ratio:4/3;object-fit:cover}
+.foto-amb-peu{margin:0}
+.foto-amb-peu figcaption{font-size:.75rem;color:var(--fade);margin-top:4px;line-height:1.3}
+.foto-amb-peu figcaption a{color:inherit}
 
 /* input ---------------------------------------------------------------- */
 .entrada{display:flex;gap:8px}

@@ -6,9 +6,11 @@
 // list. They are loaded on demand, so opening one pack does not download every map.
 //
 // A place looks like:
-//   { code, name, capital, art, hook, accepta, accNom, photo, extra, label, area, d, mark? }
-// `capital` may be null (a place that is its own capital is never asked about it).
+//   { code, name, capital, art, hook, accepta, accNom, photo, credit, extra, label, area, d, mark? }
+// `capital` may be null (a place that is its own capital is never asked about it), and
+// `askCapital: false` shows the capital on the card without ever asking it.
 // `accepta` / `accNom` are extra accepted answers for the capital / the place's name.
+// `credit` is { caption, author, license, source } for a photo from Wikimedia Commons.
 // `extra` is a line of plain context for the card, e.g. the província.
 // `mark` is set on places too small to see or tap at full extent; the map draws a ring.
 //
@@ -17,7 +19,8 @@
 
 const loaders = {
   async cat() {
-    const [{ VIEWBOX, COMARQUES, PROVINCIES, OSONA_MERGED }, { HINTS }, { PHOTOS }] =
+    // The photo module is imported whole: CREDITS only exists once photos come with one.
+    const [{ VIEWBOX, COMARQUES, PROVINCIES, OSONA_MERGED }, { HINTS }, { PHOTOS, CREDITS = {} }] =
       await Promise.all([
         import('./data/cat-geo.js'), import('./data/cat-hints.js'), import('./data/cat-photos.js'),
       ]);
@@ -29,7 +32,7 @@ const loaders = {
         return {
           code: c.code, name: c.name, capital: c.capital,
           art: h.art, hook: h.hook, accepta: h.accepta || [], accNom: [],
-          photo: PHOTOS[c.code] ? `img/cat/${PHOTOS[c.code]}` : null,
+          photo: PHOTOS[c.code] ? `img/cat/${PHOTOS[c.code]}` : null, credit: CREDITS[c.code] || null,
           extra: `Província: ${c.provincia}`
             + (c.provinciaNota ? ` <span class="nota">(${c.provinciaNota})</span>` : ''),
           label: c.label, area: c.area, d: c.d,
@@ -58,7 +61,7 @@ const loaders = {
   },
 
   async ue() {
-    const [{ VIEWBOX, COUNTRIES, CONTEXT }, { HINTS }, { PHOTOS }] = await Promise.all([
+    const [{ VIEWBOX, COUNTRIES, CONTEXT }, { HINTS }, { PHOTOS, CREDITS = {} }] = await Promise.all([
       import('./data/ue-geo.js'), import('./data/ue-hints.js'), import('./data/ue-photos.js'),
     ]);
     return {
@@ -69,7 +72,8 @@ const loaders = {
         return {
           code: c.code, name: h.name, capital: h.capital,
           art: h.art, hook: h.hook, accepta: h.accepta || [], accNom: h.accNom || [],
-          photo: PHOTOS[c.code] ? `img/ue/${PHOTOS[c.code]}` : null,
+          askCapital: h.preguntaCapital !== false,
+          photo: PHOTOS[c.code] ? `img/ue/${PHOTOS[c.code]}` : null, credit: CREDITS[c.code] || null,
           extra: null,
           label: c.label, area: c.area, d: c.d, mark: c.mark,
         };
@@ -105,9 +109,10 @@ export function activeCodes(topic, toggleOn) {
   return topic.places.map((p) => p.code).filter((c) => !hidden.has(c));
 }
 
-/** The (code, facet) pairs a pack asks about. A place without a capital has no capital facet. */
+/** The (code, facet) pairs a pack asks about. A place whose capital is not asked has no capital facet. */
 export function activePairs(topic, pack, toggleOn) {
   return activeCodes(topic, toggleOn).flatMap((code) => pack.facets
-    .filter((f) => f !== 'capital' || topic.byCode.get(code).capital)
+    .filter((f) => f !== 'capital'
+      || (topic.byCode.get(code).capital && topic.byCode.get(code).askCapital !== false))
     .map((facet) => ({ code, facet })));
 }

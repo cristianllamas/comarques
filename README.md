@@ -42,6 +42,11 @@ just do; *Comarques* (half the items) is covered comfortably at two.
 
 ## Adding photos
 
+For the EU pack, `node build/fetch-photos.mjs ue` downloads a landmark photo per country
+from Wikimedia Commons, with the credit its licence requires (shown under the photo).
+The landmarks are listed in that script; pin a specific Commons file with `file:` to
+replace one. Then run `scan-photos` as below.
+
 Drop image files into `photos/<topic>/` (e.g. `photos/cat/`) and run
 `node build/scan-photos.mjs cat`. The filename can be
 the capital or the comarca, and accents, capitals, apostrophes, articles and hyphens are

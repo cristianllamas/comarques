@@ -24,6 +24,7 @@ build/          run by hand; writes into docs/
   fetch-geo.mjs     ICGC layers -> docs/data/cat-geo.js
   fetch-geo-ue.mjs  Eurostat GISCO countries -> docs/data/ue-geo.js
   fetch-hints.mjs   Wikipedia intros -> data/hints.raw.md  (raw material, not shipped)
+  fetch-photos.mjs  landmark photos + credits from Wikimedia Commons -> photos/<topic>/
   scan-photos.mjs   photos/<topic>/ -> docs/img/<topic>/ + docs/data/<topic>-photos.js
   sim-scheduler.mjs simulates a week per pack; asserts coverage
   e2e.mjs           drives real Chrome over DevTools Protocol
@@ -145,6 +146,15 @@ the article itself (*els Països Baixos*), the genitive (*dels*, *de la*, *de l'
 the verb — plural names take *són* ("On són les Garrigues?"; the first version asked "On
 és les Garrigues?"). With no article, *de* elides before a vowel or silent h (*d'Hongria*)
 and not before a consonant (*de França*).
+
+**Photos are landmarks chosen by hand, fetched with their credits.** Auto-picking a
+place's own lead image gave flags and maps for the comarques. `fetch-photos.mjs` instead
+takes a reviewed landmark per place and uses the image Wikidata's editors chose for it,
+preferring landscape JPEGs because the card crops to 4:3. Even so, 6 of 27 automatic
+picks failed review (an empty square, a cropped tower, the wrong town) and are pinned to
+a specific Commons file in `LANDMARKS`. Every Commons photo ships a caption that names
+the city — so the Alhambra on the Spain card is never taken for Madrid — plus the author
+and licence the licence requires, linked to the file's Commons page.
 
 **Packs keep separate progress, even when they share a map.** Knowing where the Bages is
 in "Comarques" says nothing about its capital, and merging the two would make one pack's

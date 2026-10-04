@@ -365,7 +365,8 @@ await sleep(250);
 check(await clickPack('Unió Europea') === 'ok', 'the EU pack is listed');
 await sleep(800);
 t = await text();
-check(/Unió Europea/.test(t) && /54 preguntes/.test(t), 'EU pack: 27 countries x 2 = 54 questions');
+check(/Unió Europea/.test(t) && /53 preguntes/.test(t),
+  'EU pack: 27 locations + 26 capitals (Luxembourg\'s is never asked) = 53 questions');
 check(await evaluate('document.querySelectorAll("svg.mapa path.zona").length') === 27, '27 country shapes');
 check(await evaluate('document.querySelectorAll("svg.mapa path.contexte").length') > 0,
   'non-member countries are drawn as context');
@@ -376,6 +377,10 @@ await clickText('Comença');
 await sleep(400);
 t = await text();
 check(/Capital:/.test(t), 'EU study card shows the capital');
+check(await evaluate(`(()=>{const f=document.querySelector('.fitxa figure.foto-amb-peu');
+  return !!f && /Foto: .+, .+/.test(f.querySelector('figcaption').textContent)
+    && !!f.querySelector('figcaption a[href^="https://commons.wikimedia.org/"]');})()`),
+  'EU photo carries a caption, author, licence and a link to its Commons page');
 await shot('15-ue-study');
 const ueCards = await walkStudy();
 check(new Set(ueCards).size === ueCards.length, `Fase 1 shows ${ueCards.length} different countries`);

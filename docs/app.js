@@ -37,16 +37,31 @@ const h = (tag, cls, html) => {
 };
 
 function photoFor(code) {
-  const src = topic.byCode.get(code)?.photo;
-  if (!src) return null;
+  const place = topic.byCode.get(code);
+  if (!place?.photo) return null;
   const img = h('img', 'foto');
-  img.src = src;
-  img.alt = '';
+  img.src = place.photo;
+  img.alt = place.credit?.caption || '';
   img.loading = 'lazy';
-  // Belt and braces: the photo list only names files the build actually found, but if
-  // one goes missing later the card must still render rather than show a broken image.
-  img.onerror = () => img.remove();
-  return img;
+  const c = place.credit;
+  if (!c) {
+    // Belt and braces: the photo list only names files the build actually found, but if
+    // one goes missing later the card must still render rather than show a broken image.
+    img.onerror = () => img.remove();
+    return img;
+  }
+  // Photos from Wikimedia Commons carry a caption — which always names the city, so a
+  // landmark outside the capital (the Alhambra) is never taken for one in it — and the
+  // author and licence the licence requires.
+  const fig = h('figure', 'foto-amb-peu');
+  const cap = h('figcaption');
+  cap.append(c.caption + ' · ');
+  const a = h('a', null, `Foto: ${c.author}, ${c.license}`);
+  a.href = c.source; a.target = '_blank'; a.rel = 'noopener';
+  cap.append(a);
+  fig.append(img, cap);
+  img.onerror = () => fig.remove();
+  return fig;
 }
 
 /** Name, capital (if the pack asks for it), photo, hook and context for one place. */

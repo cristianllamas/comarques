@@ -7,8 +7,10 @@
 // the geometry has no entry here.
 //
 // `art` is the article the name takes in a sentence. Almost every country takes none
-// (França, d'Alemanya), but a few do: els Països Baixos, la República Txeca.
+// (França, d'Alemanya, Txèquia), but some do: els Països Baixos.
 // `accepta` lists extra accepted answers for the capital; `accNom` for the country.
+// `preguntaCapital: false` keeps the capital on the card but never asks it: Luxembourg's
+// capital is also called Luxemburg, so the question would answer itself.
 
 export const HINTS = {
   DE: { name: 'Alemanya', capital: 'Berlín', art: 'cap',
@@ -49,7 +51,7 @@ export const HINTS = {
         hook: 'La del mig de les tres repúbliques bàltiques. Riga és la ciutat més gran dels països bàltics.' },
   LT: { name: 'Lituània', capital: 'Vílnius', art: 'cap',
         hook: "La més al sud de les tres repúbliques bàltiques. El bàsquet hi és l'esport nacional." },
-  LU: { name: 'Luxemburg', capital: 'Luxemburg', art: 'cap', accepta: ['Ciutat de Luxemburg'],
+  LU: { name: 'Luxemburg', capital: 'Luxemburg', art: 'cap', preguntaCapital: false,
         hook: 'Un dels països més petits de la UE, i la capital es diu igual que el país.' },
   MT: { name: 'Malta', capital: 'la Valletta', art: 'cap',
         hook: 'El país més petit de la UE: unes illes al mig del Mediterrani. La Valletta és tota emmurallada.' },
@@ -59,7 +61,7 @@ export const HINTS = {
         hook: 'Marie Curie i Chopin hi van néixer. Varsòvia es va reconstruir després de la Segona Guerra Mundial.' },
   PT: { name: 'Portugal', capital: 'Lisboa', art: 'cap',
         hook: "El veí de l'oest, a la costa atlàntica. A Lisboa, els tramvies grocs i la torre de Belém." },
-  CZ: { name: 'República Txeca', capital: 'Praga', art: 'la', accNom: ['Txèquia'],
+  CZ: { name: 'Txèquia', capital: 'Praga', art: 'cap', accNom: ['República Txeca'],
         hook: 'Amb Eslovàquia formava Txecoslovàquia. Praga té el pont de Carles i un rellotge astronòmic medieval.' },
   RO: { name: 'Romania', capital: 'Bucarest', art: 'cap',
         hook: 'Els Carpats i la llegenda de Dràcula, a Transsilvània. A Bucarest, el Palau del Parlament, enorme.' },
