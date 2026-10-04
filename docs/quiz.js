@@ -9,12 +9,18 @@
 //   nominative: l'Alt Camp / el Berguedà / la Selva / les Garrigues / Osona
 //   genitive:   de l'Alt Camp / del Berguedà / de la Selva / de les Garrigues / d'Osona
 const ART = { l: "l'", el: 'el ', la: 'la ', les: 'les ', els: 'els ', cap: '' };
-const GEN = { l: "de l'", el: 'del ', la: 'de la ', les: 'de les ', els: 'dels ', cap: "d'" };
+const GEN = { l: "de l'", el: 'del ', la: 'de la ', les: 'de les ', els: 'dels ' };
+
+// No article: "de" elides before a vowel or a silent h — d'Osona, d'Alemanya, d'Hongria —
+// but not before a consonant: de França, de Malta.
+const de = (name) => (/^h?[aeiouàèéíïòóúü]/i.test(name) ? "d'" : 'de ');
 
 const sentenceCase = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export const withArticle = (place) => (ART[place.art] ?? '') + place.name;
-export const genitive = (place) => (GEN[place.art] ?? 'de ') + place.name;
+// Plural names take a plural verb: "On són les Garrigues?", "On són els Països Baixos?"
+const isPlural = (place) => place.art === 'les' || place.art === 'els';
+export const genitive = (place) => (GEN[place.art] ?? de(place.name)) + place.name;
 
 export function buildQuestion(entry, topic, rnd = Math.random) {
   const c = topic.byCode.get(entry.code);
@@ -22,10 +28,10 @@ export function buildQuestion(entry, topic, rnd = Math.random) {
   if (entry.facet === 'lloc') {
     // A: name given, tap it on the map.  D: shape highlighted, name it.
     return rnd() < 0.65
-      ? { kind: 'tap-map', code: c.code, prompt: `On és <b>${withArticle(c)}</b>?`,
+      ? { kind: 'tap-map', code: c.code, prompt: `On ${isPlural(c) ? 'són' : 'és'} <b>${withArticle(c)}</b>?`,
           answer: c.name, hint: c.hook }
       : { kind: 'name-shape', code: c.code, prompt: topic.words.whichShape,
-          answer: c.name, accepta: [], hint: c.hook };
+          answer: c.name, accepta: c.accNom, hint: c.hook };
   }
 
   // B: place -> capital.  C: capital -> place (the reverse is a separate memory).
@@ -37,7 +43,7 @@ export function buildQuestion(entry, topic, rnd = Math.random) {
         // Place names keep their lowercase article ("el Pont de Suert"), but it still
         // has to be capitalised when it opens the sentence.
         prompt: `<b>${sentenceCase(c.capital)}</b> ${topic.words.capitalOfWhich}`,
-        answer: c.name, accepta: [], hint: c.hook };
+        answer: c.name, accepta: c.accNom, hint: c.hook };
 }
 
 /** Four plausible options for the final rung of the climb-down. */

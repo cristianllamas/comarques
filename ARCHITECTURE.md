@@ -20,7 +20,9 @@ whether capitals are asked. Everything below the pack layer is topic-agnostic.
 ```
 build/          run by hand; writes into docs/
   topology.mjs      shared-arc topology + Visvalingam simplification
+  geo-lib.mjs       helpers shared by the geo builds (rings, label anchor, dissolve, layer)
   fetch-geo.mjs     ICGC layers -> docs/data/cat-geo.js
+  fetch-geo-ue.mjs  Eurostat GISCO countries -> docs/data/ue-geo.js
   fetch-hints.mjs   Wikipedia intros -> data/hints.raw.md  (raw material, not shipped)
   scan-photos.mjs   photos/<topic>/ -> docs/img/<topic>/ + docs/data/<topic>-photos.js
   sim-scheduler.mjs simulates a week per pack; asserts coverage
@@ -40,6 +42,9 @@ docs/           this directory IS the published site (GitHub Pages, /docs on mai
     cat-geo.js      GENERATED — do not edit
     cat-hints.js    hand-written memory hooks + articles
     cat-photos.js   GENERATED — do not edit
+    ue-geo.js       GENERATED — do not edit
+    ue-hints.js     hand-written: Catalan names, capitals, articles, hooks (source of truth)
+    ue-photos.js    GENERATED — do not edit
   sw.js         offline cache
 ```
 
@@ -120,6 +125,26 @@ reshuffle.
 **One place at most once per session.** `selectDue` skips a place it has already picked.
 Before this, both facets of a place came out together and Fase 1 showed the same card
 twice in a row, and Fase 2 could ask the capital of a comarca Fase 1 had just shown.
+
+**The EU map: GISCO in its own projection, neighbours as context.** The source is
+Eurostat's country layer already in EPSG:3035, the EU's own equal-area projection, so the
+build only scales and flips it. Overseas territories are dropped by fitting the frame to
+the European parts of the member states. Every non-member inside the frame is drawn grey
+and untappable (`topic.context`), because a country floating in white space is hard to
+recognise; they are clipped to a window slightly larger than the frame so the cut edges
+are never visible. Members and context go through one topology so shared borders stay
+welded. Names and capitals do not come from GISCO (its names are English):
+`ue-hints.js` is the source of truth, and the build refuses to run if the two disagree.
+
+**Tap rings for tiny places.** Malta is about two pixels across at full extent and
+Luxembourg about six. Places under `SMALL` units² get a `mark`, which the map draws as a
+ring that can be seen, tapped, and highlighted with the same classes as the shape.
+
+**Grammar comes from the article, never from the name.** `art` drives three things:
+the article itself (*els Països Baixos*), the genitive (*dels*, *de la*, *de l'*), and
+the verb — plural names take *són* ("On són les Garrigues?"; the first version asked "On
+és les Garrigues?"). With no article, *de* elides before a vowel or silent h (*d'Hongria*)
+and not before a consonant (*de França*).
 
 **Packs keep separate progress, even when they share a map.** Knowing where the Bages is
 in "Comarques" says nothing about its capital, and merging the two would make one pack's

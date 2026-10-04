@@ -1,7 +1,8 @@
 # CLAUDE.md
 
 Geography study app ("Estudia geografia"): content packs for the comarques of
-Catalunya, with or without capitals, and more to come. Correctness of the content matters
+Catalunya (with or without capitals) and the EU member states and capitals, with more to
+come. Correctness of the content matters
 more than polish.
 
 **Read `ARCHITECTURE.md` before changing anything.** It records why several
@@ -48,6 +49,9 @@ feature.
 The build asserts 43 comarques, every one with a capital and a província, and the
 per-província counts against the official table. If those fire, investigate rather than
 adjust the expectation.
+
+For the EU, `build/fetch-geo-ue.mjs` asserts 27 member states (from GISCO's `EU_STAT`
+flag) and that each one has a Catalan name, capital and article in `ue-hints.js`.
 
 Two known subtleties, both handled — see `ARCHITECTURE.md`: Cerdanya straddles two
 províncies, and Lluçanès only exists as a comarca since 2023 (the app ships in 42-comarca

@@ -16,6 +16,11 @@ export const PACKS = [
     title: 'Comarques',
     desc: 'On és cada comarca de Catalunya.',
   },
+  {
+    id: 'ue', topic: 'ue', facets: ['lloc', 'capital'],
+    title: 'Unió Europea',
+    desc: 'Els 27 països de la Unió Europea i les seves capitals.',
+  },
 ];
 
 export const packById = (id) => PACKS.find((p) => p.id === id) || null;

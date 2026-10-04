@@ -1,7 +1,8 @@
 # Estudia geografia — study app
 
 A small offline web app for school geography, organised in **content packs**: the
-learner picks one on the first screen (*Comarques i capitals*, *Comarques*), each with
+learner picks one on the first screen (*Comarques i capitals*, *Comarques*, *Unió
+Europea*), each with
 its own progress, and can switch with *Packs de contingut* in the header. Install it on a phone from
 **https://cristianllamas.github.io/comarques/** (Chrome → *Afegeix a la pantalla d'inici*).
 
@@ -66,6 +67,7 @@ for AI coding sessions.
 
 ```bash
 node build/fetch-geo.mjs      # official ICGC boundaries -> docs/data/cat-geo.js
+node build/fetch-geo-ue.mjs   # Eurostat GISCO countries -> docs/data/ue-geo.js
 node build/fetch-hints.mjs    # Catalan Wikipedia intros -> data/hints.raw.md (raw material)
 node build/scan-photos.mjs cat  # photos/cat/ -> docs/img/cat/ + docs/data/cat-photos.js
 ```

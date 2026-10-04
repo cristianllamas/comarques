@@ -5,7 +5,7 @@
   --line:#8a8578; --fill:#e2ddd1; --prov:#1b3a5c;
   --be:#1f6f8b; --be-bg:#e3f0f5;
   --mal:#c1670c; --mal-bg:#fbeadb;
-  --accent:#1b3a5c;
+  --accent:#1b3a5c; --ctx:#efebe3; --ctx-line:#b5afa3;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -13,7 +13,7 @@
     --line:#6f6a60; --fill:#3a3741; --prov:#9ec7e8;
     --be:#7fc4dd; --be-bg:#17323c;
     --mal:#eb9c4d; --mal-bg:#3a2714;
-    --accent:#9ec7e8;
+    --accent:#9ec7e8; --ctx:#26252c; --ctx-line:#4a4650;
   }
 }
 *{box-sizing:border-box}
@@ -35,6 +35,13 @@ svg.mapa{width:100%;height:auto;display:block;touch-action:none;
 svg.mapa.triable{cursor:crosshair}
 svg.mapa .zona{fill:var(--fill);stroke:var(--line);stroke-width:1;
   stroke-linejoin:round;vector-effect:non-scaling-stroke}
+svg.mapa .contexte{fill:var(--ctx);stroke:var(--ctx-line);stroke-width:.6;
+  vector-effect:non-scaling-stroke;pointer-events:none}
+svg.mapa .anella{fill:transparent;stroke:var(--prov);stroke-width:1.5;
+  vector-effect:non-scaling-stroke;pointer-events:all}
+svg.mapa .anella.destacat{stroke:var(--accent);stroke-width:3;fill:var(--accent);fill-opacity:.25}
+svg.mapa .anella.correcte{stroke:var(--be);stroke-width:3;fill:var(--be);fill-opacity:.25}
+svg.mapa .anella.error{stroke:var(--mal);stroke-width:3;fill:var(--mal);fill-opacity:.25}
 svg.mapa .provincia{fill:none;stroke:var(--prov);stroke-width:3;
   stroke-linejoin:round;vector-effect:non-scaling-stroke;pointer-events:none}
 svg.mapa .destacat{fill:var(--accent);fill-opacity:.55;stroke:var(--accent);stroke-width:2}

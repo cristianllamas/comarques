@@ -357,7 +357,51 @@ const clipped2 = await clippedLabels();
 check(clipped2.length === 0, `no name-only label is clipped either${clipped2.length ? ' — ' + clipped2.join(', ') : ''}`);
 await shot('13-nocap-studymap');
 
-console.log('\n10. progress from the comarques-only app is carried over');
+console.log('\n10. EU pack');
+await clickText('Inici');
+await sleep(250);
+await clickText('☰ Packs de contingut');
+await sleep(250);
+check(await clickPack('Unió Europea') === 'ok', 'the EU pack is listed');
+await sleep(800);
+t = await text();
+check(/Unió Europea/.test(t) && /54 preguntes/.test(t), 'EU pack: 27 countries x 2 = 54 questions');
+check(await evaluate('document.querySelectorAll("svg.mapa path.zona").length') === 27, '27 country shapes');
+check(await evaluate('document.querySelectorAll("svg.mapa path.contexte").length') > 0,
+  'non-member countries are drawn as context');
+check(await evaluate(`[...document.querySelectorAll('svg.mapa circle.anella')].map(c=>c.dataset.code).sort().join()`) === 'LU,MT',
+  'Malta and Luxembourg get a tap ring');
+await shot('14-ue-home');
+await clickText('Comença');
+await sleep(400);
+t = await text();
+check(/Capital:/.test(t), 'EU study card shows the capital');
+await shot('15-ue-study');
+const ueCards = await walkStudy();
+check(new Set(ueCards).size === ueCards.length, `Fase 1 shows ${ueCards.length} different countries`);
+await shot('16-ue-quiz');
+const uePrompts = await finishSession();
+check(/Sessió acabada/.test(await text()), 'EU session reaches the summary');
+check(uePrompts.every((p) => !/comarca/i.test(p)), 'no EU question mentions a comarca');
+await shot('17-ue-summary');
+await clickText('Inici');
+await sleep(250);
+await clickText('Mira el mapa');
+await sleep(600);
+const ueClipped = await clippedLabels();
+check(ueClipped.length === 0, `no EU label is clipped${ueClipped.length ? ' — ' + ueClipped.join(', ') : ''}`);
+await shot('18-ue-studymap');
+// tap the centre of Malta's ring: Malta itself is ~2 px across at this zoom
+await evaluate(`(()=>{const svg=document.querySelector('svg.mapa.triable');
+  const c=svg.querySelector('circle.anella[data-code="MT"]'); const r=c.getBoundingClientRect();
+  const o={bubbles:true,clientX:r.left+r.width/2,clientY:r.top+r.height/2,pointerId:1,pointerType:'touch',isPrimary:true};
+  svg.dispatchEvent(new PointerEvent('pointerdown',o)); svg.dispatchEvent(new PointerEvent('pointerup',o));})()`);
+await sleep(300);
+t = await text();
+check(/Malta/.test(t) && /la Valletta/.test(t), 'tapping the ring picks Malta');
+await shot('19-ue-malta');
+
+console.log('\n11. progress from the comarques-only app is carried over');
 await evaluate(`(()=>{localStorage.clear();
   localStorage.setItem('comarques.v1', JSON.stringify({
     items:{'01:lloc':{box:2,due:0,seen:3,wrong:0,streak:2,last:0}},

@@ -311,15 +311,14 @@ function screenQuiz() {
   const feedback = h('div', 'resposta');
 
   if (q.kind === 'tap-map') {
-    wrap.append(h('p', 'ajuda', 'Toca-la al mapa. Pots fer zoom amb dos dits.'));
+    wrap.append(h('p', 'ajuda', topic.words.tapHelp));
     mapa.onPick = (code) => {
       mapa.enablePicking(false);
       const ok = code === q.code;
       if (!ok) { mapa.mark(code, 'error'); mapa.raise(code, 'error'); }
       mapa.mark(q.code, 'correcte'); mapa.raise(q.code, 'correcte');
       mapa.focus(q.code, 3.5);
-      settle(cur, ok, feedback, wrap, ok ? null
-        : `Aquesta és <b>${topic.byCode.get(code).name}</b>. La que buscaves és aquesta.`);
+      settle(cur, ok, feedback, wrap, ok ? null : topic.words.wrongTap(topic.byCode.get(code).name));
     };
     wrap.append(feedback);
     return wrap;

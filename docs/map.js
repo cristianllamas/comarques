@@ -25,7 +25,11 @@ export class Mapa {
     this.paths = new Map();
     this.hidden = new Set();
 
+    this.rings = new Map();
+
     this.svg = el('svg', { viewBox: topic.viewBox, class: 'mapa', role: 'img' });
+    this.gContext = el('g', { 'aria-hidden': 'true' });
+    for (const d of topic.context || []) this.gContext.append(el('path', { d, class: 'contexte' }));
     this.gZones = el('g');
     for (const c of topic.places) {
       const p = el('path', { d: c.d, class: 'zona' });
@@ -33,13 +37,23 @@ export class Mapa {
       this.paths.set(c.code, p);
       this.gZones.append(p);
     }
+    // Places a few pixels across at full extent (Malta, Luxembourg) get a ring that can be
+    // seen and tapped; it takes the same highlight classes as the shape itself.
+    this.gRings = el('g');
+    for (const c of topic.places) {
+      if (!c.mark) continue;
+      const r = el('circle', { cx: c.mark[0], cy: c.mark[1], r: 11, class: 'anella' });
+      r.dataset.code = c.code;
+      this.rings.set(c.code, r);
+      this.gRings.append(r);
+    }
     this.gBorders = el('g', { 'aria-hidden': 'true' });
     for (const d of topic.borders || []) this.gBorders.append(el('path', { d, class: 'provincia' }));
 
     // drawn last so a highlighted place is never hidden under a neighbour's border
     this.gTop = el('g', { 'aria-hidden': 'true' });
     this.gLabels = el('g', { class: 'etiquetes', 'aria-hidden': 'true' });
-    this.svg.append(this.gZones, this.gBorders, this.gTop, this.gLabels);
+    this.svg.append(this.gContext, this.gZones, this.gBorders, this.gTop, this.gRings, this.gLabels);
     this.labels = false;
     this.labelCapitals = true;
 
@@ -95,8 +109,8 @@ export class Mapa {
   }
 
   mark(code, cls) {
-    const p = this.paths.get(code);
-    if (p) p.classList.add(cls);
+    this.paths.get(code)?.classList.add(cls);
+    this.rings.get(code)?.classList.add(cls);
   }
 
   /**
@@ -202,7 +216,9 @@ export class Mapa {
   }
 
   clearMarks() {
-    for (const p of this.paths.values()) p.classList.remove('correcte', 'error', 'destacat', 'apagat');
+    for (const p of [...this.paths.values(), ...this.rings.values()]) {
+      p.classList.remove('correcte', 'error', 'destacat', 'apagat');
+    }
     this.gTop.replaceChildren();
   }
 
@@ -301,8 +317,8 @@ export class Mapa {
       if (!pts.size) start = null;
       if (!wasTap || !this.picking) return;
       const hit = document.elementFromPoint(e.clientX, e.clientY);
-      const path = hit && hit.closest && hit.closest('path.zona');
-      if (path && this.onPick) this.onPick(path.dataset.code);
+      const zone = hit && hit.closest && hit.closest('.zona, .anella');
+      if (zone && this.svg.contains(zone) && this.onPick) this.onPick(zone.dataset.code);
     };
     this.svg.addEventListener('pointerup', end);
     this.svg.addEventListener('pointercancel', (e) => { pts.delete(e.pointerId); start = null; });
