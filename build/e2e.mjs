@@ -406,7 +406,63 @@ t = await text();
 check(/Malta/.test(t) && /la Valletta/.test(t), 'tapping the ring picks Malta');
 await shot('19-ue-malta');
 
-console.log('\n11. progress from the comarques-only app is carried over');
+console.log('\n11. Comunitats autònomes pack');
+// Taps a place: its ring if it has one, otherwise a point that is really inside the shape
+// (the centre of an archipelago's bounding box is sea).
+const tapCode = (code) => evaluate(`(()=>{const svg=document.querySelector('svg.mapa.triable');
+  let x, y;
+  const ring=svg.querySelector('circle.anella[data-code="${code}"]');
+  if (ring) { const r=ring.getBoundingClientRect(); x=r.left+r.width/2; y=r.top+r.height/2; }
+  else {
+    const p=svg.querySelector('path.zona[data-code="${code}"]'), b=p.getBBox(), m=p.getScreenCTM();
+    outer: for (let i=1;i<20;i++) for (let j=1;j<20;j++) {
+      const pt=new DOMPoint(b.x+b.width*i/20, b.y+b.height*j/20);
+      if (p.isPointInFill(pt)) { const s=pt.matrixTransform(m); x=s.x; y=s.y; break outer; }
+    }
+  }
+  const o={bubbles:true,clientX:x,clientY:y,pointerId:1,pointerType:'touch',isPrimary:true};
+  svg.dispatchEvent(new PointerEvent('pointerdown',o)); svg.dispatchEvent(new PointerEvent('pointerup',o));})()`);
+await clickText('Inici');
+await sleep(250);
+await clickText('☰ Packs de contingut');
+await sleep(250);
+check(await clickPack('Comunitats autònomes') === 'ok', 'the Comunitats pack is listed');
+await sleep(800);
+t = await text();
+check(/34 preguntes/.test(t),
+  'Comunitats: 19 locations + 15 capitals (not Ceuta, Melilla, Madrid, Múrcia) = 34 questions');
+check(await evaluate('document.querySelectorAll("svg.mapa path.zona").length') === 19, '19 region shapes');
+check(await evaluate('!!document.querySelector("svg.mapa rect.requadre")'), 'Canàries are framed in an inset');
+check(await evaluate(`[...document.querySelectorAll('svg.mapa circle.anella')].map(c=>c.dataset.code).sort().join()`) === 'ES63,ES64',
+  'Ceuta and Melilla get a tap ring');
+await shot('20-esp-home');
+await clickText('Comença');
+await sleep(400);
+check(/Capital:|Ciutat autònoma/.test(await text()), 'Comunitats study card shows the capital (or says ciutat autònoma)');
+await shot('21-esp-study');
+await walkStudy();
+const espPrompts = await finishSession();
+check(/Sessió acabada/.test(await text()), 'Comunitats session reaches the summary');
+check(espPrompts.every((p) => !/quina comarca|quin país/i.test(p)), 'no Comunitats question asks for a comarca or a país');
+await clickText('Inici');
+await sleep(250);
+await clickText('Mira el mapa');
+await sleep(600);
+const espClipped = await clippedLabels();
+check(espClipped.length === 0, `no Comunitats label is clipped${espClipped.length ? ' — ' + espClipped.join(', ') : ''}`);
+await shot('22-esp-studymap');
+await tapCode('ES63');
+await sleep(300);
+t = await text();
+check(/Ceuta/.test(t) && /Ciutat autònoma/.test(t) && !/Capital:/.test(t), 'Ceuta: tap ring works, card says ciutat autònoma, no capital');
+await tapCode('ES70');
+await sleep(300);
+t = await text();
+check(/Canàries/.test(t) && /Capitals: Las Palmas de Gran Canaria i Santa Cruz de Tenerife/.test(t),
+  'Canàries: tapping the inset works and the card names both capitals');
+await shot('23-esp-canaries');
+
+console.log('\n12. progress from the comarques-only app is carried over');
 await evaluate(`(()=>{localStorage.clear();
   localStorage.setItem('comarques.v1', JSON.stringify({
     items:{'01:lloc':{box:2,due:0,seen:3,wrong:0,streak:2,last:0}},

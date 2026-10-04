@@ -21,6 +21,11 @@ export const PACKS = [
     title: 'Unió Europea',
     desc: 'Els 27 països de la Unió Europea i les seves capitals.',
   },
+  {
+    id: 'comunitats', topic: 'esp', facets: ['lloc', 'capital'],
+    title: 'Comunitats autònomes',
+    desc: 'Les comunitats autònomes d’Espanya i les seves capitals, amb Ceuta i Melilla.',
+  },
 ];
 
 export const packById = (id) => PACKS.find((p) => p.id === id) || null;

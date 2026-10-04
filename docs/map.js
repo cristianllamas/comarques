@@ -30,6 +30,10 @@ export class Mapa {
     this.svg = el('svg', { viewBox: topic.viewBox, class: 'mapa', role: 'img' });
     this.gContext = el('g', { 'aria-hidden': 'true' });
     for (const d of topic.context || []) this.gContext.append(el('path', { d, class: 'contexte' }));
+    // An inset box hides the context underneath it, so the islands sit on open sea.
+    for (const b of topic.insets || []) {
+      this.gContext.append(el('rect', { x: b.x, y: b.y, width: b.w, height: b.h, class: 'requadre' }));
+    }
     this.gZones = el('g');
     for (const c of topic.places) {
       const p = el('path', { d: c.d, class: 'zona' });
@@ -158,7 +162,8 @@ export class Mapa {
       l1.textContent = c.name.toUpperCase();
       const l2 = el('tspan', { x: ax, dy: u(NAME_PX * LINE), class: 'cap',
         'font-size': u(CAP_PX) });
-      l2.textContent = c.capital || '';
+      // Two capitals read "A i B"; a place may give a shorter form for the map.
+      l2.textContent = c.capitalLabel || String(c.capital || '').split('/').map((x) => x.trim()).join(' i ');
       t.append(l1);
       if (this.labelCapitals && c.capital) t.append(l2);
       return { c, t, l1, l2, ax, ay };

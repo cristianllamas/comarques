@@ -2,7 +2,7 @@
 
 A small offline web app for school geography, organised in **content packs**: the
 learner picks one on the first screen (*Comarques i capitals*, *Comarques*, *Unió
-Europea*), each with
+Europea*, *Comunitats autònomes*), each with
 its own progress, and can switch with *Packs de contingut* in the header. Install it on a phone from
 **https://cristianllamas.github.io/comarques/** (Chrome → *Afegeix a la pantalla d'inici*).
 
@@ -42,7 +42,7 @@ just do; *Comarques* (half the items) is covered comfortably at two.
 
 ## Adding photos
 
-For the EU pack, `node build/fetch-photos.mjs ue` downloads a landmark photo per country
+For the EU and Comunitats packs, `node build/fetch-photos.mjs ue` (or `esp`) downloads a landmark photo per country
 from Wikimedia Commons, with the credit its licence requires (shown under the photo).
 The landmarks are listed in that script; pin a specific Commons file with `file:` to
 replace one. Then run `scan-photos` as below.
@@ -73,6 +73,7 @@ for AI coding sessions.
 ```bash
 node build/fetch-geo.mjs      # official ICGC boundaries -> docs/data/cat-geo.js
 node build/fetch-geo-ue.mjs   # Eurostat GISCO countries -> docs/data/ue-geo.js
+node build/fetch-geo-esp.mjs  # Eurostat GISCO NUTS-2 (Spain) -> docs/data/esp-geo.js
 node build/fetch-hints.mjs    # Catalan Wikipedia intros -> data/hints.raw.md (raw material)
 node build/scan-photos.mjs cat  # photos/cat/ -> docs/img/cat/ + docs/data/cat-photos.js
 ```

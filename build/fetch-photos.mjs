@@ -57,6 +57,27 @@ const LANDMARKS = {
     SE: { title: 'Gamla stan', caption: 'Gamla Stan · Estocolm' },
     CY: { title: ['Venetian walls of Nicosia', 'Walls of Nicosia'], caption: 'Muralles venecianes · Nicòsia' },
   },
+  esp: {
+    ES11: { title: 'Santiago de Compostela Cathedral', caption: 'Catedral · Santiago de Compostel·la' },
+    ES12: { title: 'Oviedo Cathedral', caption: 'Catedral · Oviedo' },
+    ES13: { title: 'Magdalena Palace', caption: 'Palau de la Magdalena · Santander', file: 'Palacio de la Magdalena.jpg' },
+    ES21: { title: ['Plaza de la Virgen Blanca', 'Old Cathedral of Vitoria'], caption: 'Plaça de la Verge Blanca · Vitòria' },
+    ES22: { title: 'Pamplona Cathedral', caption: 'Catedral · Pamplona' },
+    ES23: { title: ['Co-cathedral of Santa María de la Redonda', 'Logroño Cathedral'], caption: 'Concatedral de la Redonda · Logronyo' },
+    ES24: { title: 'Basilica of Our Lady of the Pillar', caption: 'Basílica del Pilar · Saragossa' },
+    ES30: { title: 'Puerta de Alcalá', caption: 'Puerta de Alcalá · Madrid' },
+    ES41: { title: ['Plaza Mayor, Valladolid', 'Plaza Mayor (Valladolid)', 'Valladolid Cathedral'], caption: 'Plaza Mayor · Valladolid' },
+    ES42: { title: 'Alcázar of Toledo', caption: 'L’Alcàsser i la ciutat · Toledo' },
+    ES43: { title: 'Roman Theatre of Mérida', caption: 'Teatre romà · Mèrida' },
+    ES51: { title: 'Sagrada Família', caption: 'Sagrada Família · Barcelona' },
+    ES52: { title: 'City of Arts and Sciences', caption: 'Ciutat de les Arts i les Ciències · València' },
+    ES53: { title: 'Palma Cathedral', caption: 'La Seu · Palma' },
+    ES61: { title: 'Giralda', caption: 'La Giralda · Sevilla' },
+    ES62: { title: 'Murcia Cathedral', caption: 'Catedral · Múrcia' },
+    ES63: { title: ['Royal Walls of Ceuta', 'Royal Walls'], caption: 'Muralles Reials · Ceuta' },
+    ES64: { title: ['Melilla la Vieja', 'Old town of Melilla'], caption: 'Melilla la Vella · Melilla' },
+    ES70: { title: 'Teide', caption: 'El Teide · Tenerife' },
+  },
 };
 
 const TOPIC = process.argv[2];
@@ -79,9 +100,9 @@ const api = async (host, params) => {
   }
 };
 
-/** Candidate Commons file names for a landmark, best first. */
+/** Candidate Commons file names for a landmark, best first, and the title they came from. */
 async function candidates(spec) {
-  if (spec.file) return [spec.file];
+  if (spec.file) return { files: [spec.file], title: null };
   for (const title of [].concat(spec.title)) {
     const q = await api('en.wikipedia.org', {
       action: 'query', redirects: 1, prop: 'pageprops|pageimages', piprop: 'name', titles: title,
@@ -95,9 +116,9 @@ async function candidates(spec) {
       for (const s of c.claims?.P18 || []) out.push(s.mainsnak.datavalue.value);
     }
     if (page.pageimage) out.push(page.pageimage.replace(/_/g, ' '));
-    if (out.length) return [...new Set(out)];
+    if (out.length) return { files: [...new Set(out)], title };
   }
-  return [];
+  return { files: [], title: null };
 }
 
 const strip = (html) => String(html || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
@@ -126,12 +147,24 @@ const problems = [];
 for (const [code, spec] of Object.entries(LANDMARKS[TOPIC])) {
   const place = byCode.get(code);
   if (!place) { problems.push(`${code}: not a place in topic ${TOPIC}`); continue; }
-  const out = `${DIR}/${place.capital || place.name}.jpg`;
+  // Named after the capital so scan-photos can match it; the first of two, or the name.
+  const out = `${DIR}/${(place.capital || place.name).split('/')[0].trim()}.jpg`;
   const stale = spec.file && credits[code]?.file !== spec.file;
-  if (existsSync(out) && credits[code] && !stale && !process.env.FORCE) { console.log(`  keep  ${code} ${out}`); continue; }
+  if (existsSync(out) && credits[code] && !stale && !process.env.FORCE) {
+    // The caption always follows the table, so correcting one needs no refetch.
+    credits[code].caption = spec.caption;
+    console.log(`  keep  ${code} ${out}`);
+    continue;
+  }
 
   const found = [];
-  for (const f of await candidates(spec)) {
+  const cand = await candidates(spec);
+  // The caption is written for the first title. A photo found through a fallback title
+  // may show something else — Navarra once got the cathedral captioned "Plaça del Castell".
+  if (cand.title && cand.title !== [].concat(spec.title)[0]) {
+    problems.push(`${code}: found via fallback title "${cand.title}" — check the caption still fits`);
+  }
+  for (const f of cand.files) {
     const i = await info(f);
     if (i && i.mime === 'image/jpeg') found.push(i);
   }

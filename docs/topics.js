@@ -15,7 +15,10 @@
 // `mark` is set on places too small to see or tap at full extent; the map draws a ring.
 //
 // A topic may also carry `context`: non-tappable shapes drawn in grey around the places
-// (the countries around the EU), and `borders`: thicker lines over them (províncies).
+// (the countries around the EU), `borders`: thicker lines over them (províncies), and
+// `insets`: framed boxes for places drawn away from their real position (Canàries).
+//
+// A capital written "A / B" is two capitals, both accepted (Canàries, Vallès Occidental).
 
 const loaders = {
   async cat() {
@@ -44,10 +47,11 @@ const loaders = {
         many: 'comarques',
         whichShape: 'Quina comarca és la destacada?',
         capitalOfWhich: 'és la capital de quina comarca?',
+        capitalsOfWhich: 'són les capitals de quina comarca?',
         placeholder: 'La comarca…',
         tapToSee: 'Toca una comarca per veure-la de prop.',
         tapHelp: 'Toca-la al mapa. Pots fer zoom amb dos dits.',
-        wrongTap: (name) => `Aquesta és <b>${name}</b>. La que buscaves és aquesta.`,
+        wrongTap: (name) => `Has tocat <b>${name}</b>. La que buscaves és aquesta.`,
       },
       // Lluçanès only exists since 2023. Off means the pre-2023 map: Lluçanès hidden and
       // Osona drawn with it dissolved back in, so no stray border is left behind.
@@ -84,10 +88,47 @@ const loaders = {
         many: 'països',
         whichShape: 'Quin país és el destacat?',
         capitalOfWhich: 'és la capital de quin país?',
+        capitalsOfWhich: 'són les capitals de quin país?',
         placeholder: 'El país…',
         tapToSee: 'Toca un país per veure’l de prop.',
         tapHelp: 'Toca’l al mapa. Pots fer zoom amb dos dits.',
-        wrongTap: (name) => `Aquest és <b>${name}</b>. El que buscaves és aquest.`,
+        wrongTap: (name) => `Has tocat <b>${name}</b>. El que buscaves és aquest.`,
+      },
+    };
+  },
+
+  async esp() {
+    const [{ VIEWBOX, REGIONS, CONTEXT, INSET }, { HINTS }, { PHOTOS, CREDITS = {} }] = await Promise.all([
+      import('./data/esp-geo.js'), import('./data/esp-hints.js'), import('./data/esp-photos.js'),
+    ]);
+    return {
+      id: 'esp',
+      viewBox: VIEWBOX,
+      places: REGIONS.map((c) => {
+        const h = HINTS[c.code];
+        return {
+          code: c.code, name: h.name, capital: h.capital,
+          art: h.art, hook: h.hook, accepta: h.accepta || [], accNom: h.accNom || [],
+          askCapital: h.preguntaCapital !== false, capitalLabel: h.etiqueta,
+          photo: PHOTOS[c.code] ? `img/esp/${PHOTOS[c.code]}` : null, credit: CREDITS[c.code] || null,
+          extra: h.nota || null,
+          label: c.label, area: c.area, d: c.d, mark: c.mark,
+        };
+      }).sort((a, b) => a.name.localeCompare(b.name, 'ca')),
+      context: [CONTEXT],
+      insets: [INSET],
+      borders: [],
+      words: {
+        many: 'comunitats i ciutats autònomes',
+        // Neutral on purpose: "quina comunitat" would be wrong for Ceuta and Melilla, and
+        // naming them "ciutat autònoma" would give the answer away.
+        whichShape: 'Quina comunitat o ciutat autònoma és la destacada?',
+        capitalOfWhich: 'és la capital de quina comunitat autònoma?',
+        capitalsOfWhich: 'són les capitals de quina comunitat autònoma?',
+        placeholder: 'La comunitat…',
+        tapToSee: 'Toca una comunitat per veure-la de prop.',
+        tapHelp: 'Toca-la al mapa. Pots fer zoom amb dos dits.',
+        wrongTap: (name) => `Has tocat <b>${name}</b>. La que buscaves és aquesta.`,
       },
     };
   },

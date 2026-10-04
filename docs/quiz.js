@@ -18,6 +18,8 @@ const de = (name) => (/^h?[aeiouàèéíïòóúü]/i.test(name) ? "d'" : 'de ')
 const sentenceCase = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export const withArticle = (place) => (ART[place.art] ?? '') + place.name;
+/** "Sabadell / Terrassa" -> ['Sabadell', 'Terrassa']: two capitals, both accepted. */
+export const capitals = (place) => String(place.capital || '').split('/').map((s) => s.trim()).filter(Boolean);
 // Plural names take a plural verb: "On són les Garrigues?", "On són els Països Baixos?"
 const isPlural = (place) => place.art === 'les' || place.art === 'els';
 export const genitive = (place) => (GEN[place.art] ?? de(place.name)) + place.name;
@@ -35,14 +37,19 @@ export function buildQuestion(entry, topic, rnd = Math.random) {
   }
 
   // B: place -> capital.  C: capital -> place (the reverse is a separate memory).
+  const caps = capitals(c);
+  const capPrompt = caps.length > 1
+    ? `${caps.map((x) => `<b>${sentenceCase(x)}</b>`).join(' i ')} ${topic.words.capitalsOfWhich}`
+    : `<b>${sentenceCase(c.capital)}</b> ${topic.words.capitalOfWhich}`;
   return rnd() < 0.6
     ? { kind: 'capital-of', code: c.code,
-        prompt: `Quina és la capital <b>${genitive(c)}</b>?`,
+        prompt: caps.length > 1 ? `Quines són les capitals <b>${genitive(c)}</b>? (n’hi ha prou amb una)`
+          : `Quina és la capital <b>${genitive(c)}</b>?`,
         answer: c.capital, accepta: c.accepta, hint: c.hook }
     : { kind: 'comarca-of', code: c.code,
         // Place names keep their lowercase article ("el Pont de Suert"), but it still
         // has to be capitalised when it opens the sentence.
-        prompt: `<b>${sentenceCase(c.capital)}</b> ${topic.words.capitalOfWhich}`,
+        prompt: capPrompt,
         answer: c.name, accepta: c.accNom, hint: c.hook };
 }
 

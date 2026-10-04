@@ -17,8 +17,8 @@
 // Run: node build/fetch-geo-ue.mjs
 
 import { writeFileSync, readFileSync, mkdirSync } from 'node:fs';
-import { load, toRings, bbox, ringArea, toPath, centroid, labelAnchor, pointInRings, processLayer }
-  from './geo-lib.mjs';
+import { load, toRings, bbox, ringArea, toPath, centroid, labelAnchor, pointInRings, processLayer,
+  clipRing } from './geo-lib.mjs';
 import { HINTS } from '../docs/data/ue-hints.js';
 
 const URL = 'https://gisco-services.ec.europa.eu/distribution/v2/countries/geojson/CNTR_RG_10M_2024_3035.geojson';
@@ -58,38 +58,6 @@ const FRAME = [ex0 - m, ey0 - m, ex1 + m, ey1 + m];
 // Context is clipped to a slightly larger window so the cut edges sit outside the view.
 const m2 = 0.04 * (ex1 - ex0);
 const WINDOW = [FRAME[0] - m2, FRAME[1] - m2, FRAME[2] + m2, FRAME[3] + m2];
-
-/**
- * Sutherland–Hodgman clip of one closed ring to an axis-aligned rectangle.
- *
- * Intersections are computed with the segment's endpoints in a canonical order, so two
- * neighbours that share a border segment get bit-identical cut points and the topology
- * still welds them (see "Never compare coordinates as raw floats" in ARCHITECTURE.md).
- */
-function clipRing(ring, [x0, y0, x1, y1]) {
-  const cut = (a, b, axis, v) => {
-    const [p, q] = (a[0] < b[0] || (a[0] === b[0] && a[1] < b[1])) ? [a, b] : [b, a];
-    const t = (v - p[axis]) / (q[axis] - p[axis]);
-    return axis === 0 ? [v, p[1] + t * (q[1] - p[1])] : [p[0] + t * (q[0] - p[0]), v];
-  };
-  const edges = [
-    [(p) => p[0] >= x0, 0, x0], [(p) => p[0] <= x1, 0, x1],
-    [(p) => p[1] >= y0, 1, y0], [(p) => p[1] <= y1, 1, y1],
-  ];
-  let pts = ring.slice(0, -1);
-  for (const [inside, axis, v] of edges) {
-    const out = [];
-    for (let i = 0; i < pts.length; i++) {
-      const a = pts[i], b = pts[(i + 1) % pts.length];
-      const ia = inside(a), ib = inside(b);
-      if (ia) out.push(a);
-      if (ia !== ib) out.push(cut(a, b, axis, v));
-    }
-    pts = out;
-    if (!pts.length) break;
-  }
-  return pts.length >= 3 ? [...pts, pts[0]] : null;
-}
 
 const context = geo.features
   .filter((f) => f.properties.EU_STAT !== 'T')

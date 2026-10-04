@@ -10,7 +10,7 @@ import { loadTopic, activeCodes, activePairs } from './topics.js';
 import { Mapa } from './map.js';
 import { load, save, packState, resetPack } from './store.js';
 import { isCorrect, masked } from './answer.js';
-import { buildQuestion, options } from './quiz.js';
+import { buildQuestion, options, withArticle, capitals } from './quiz.js';
 import { grade, markStudied, selectDue, ensureOrder, keyOf, newItem, progress }
   from './scheduler.js';
 
@@ -27,7 +27,7 @@ const codes = () => activeCodes(topic, state.toggle);
 const pairs = () => activePairs(topic, pack, state.toggle);
 // The comarques-only pack never mentions capitals, not even on the cards.
 const asksCapital = () => pack.facets.includes('capital');
-const solution = (c) => `<b>${c.name}</b>` + (asksCapital() && c.capital ? ` — ${c.capital}` : '');
+const solution = (c) => `<b>${c.name}</b>` + (asksCapital() && c.capital ? ` — ${capitals(c).join(' i ')}` : '');
 
 const h = (tag, cls, html) => {
   const e = document.createElement(tag);
@@ -69,7 +69,10 @@ function placeCard(code, cls = 'fitxa') {
   const c = topic.byCode.get(code);
   const card = h('div', cls);
   card.append(h('h2', null, c.name));
-  if (asksCapital() && c.capital) card.append(h('p', 'capital', `Capital: <b>${c.capital}</b>`));
+  if (asksCapital() && c.capital) {
+    const caps = capitals(c);
+    card.append(h('p', 'capital', `${caps.length > 1 ? 'Capitals' : 'Capital'}: <b>${caps.join('</b> i <b>')}</b>`));
+  }
   const photo = photoFor(code);
   if (photo) card.append(photo);
   if (c.hook) card.append(h('p', 'pista', c.hook));
@@ -333,7 +336,7 @@ function screenQuiz() {
       if (!ok) { mapa.mark(code, 'error'); mapa.raise(code, 'error'); }
       mapa.mark(q.code, 'correcte'); mapa.raise(q.code, 'correcte');
       mapa.focus(q.code, 3.5);
-      settle(cur, ok, feedback, wrap, ok ? null : topic.words.wrongTap(topic.byCode.get(code).name));
+      settle(cur, ok, feedback, wrap, ok ? null : topic.words.wrongTap(withArticle(topic.byCode.get(code))));
     };
     wrap.append(feedback);
     return wrap;

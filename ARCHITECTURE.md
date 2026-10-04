@@ -23,6 +23,7 @@ build/          run by hand; writes into docs/
   geo-lib.mjs       helpers shared by the geo builds (rings, label anchor, dissolve, layer)
   fetch-geo.mjs     ICGC layers -> docs/data/cat-geo.js
   fetch-geo-ue.mjs  Eurostat GISCO countries -> docs/data/ue-geo.js
+  fetch-geo-esp.mjs Eurostat GISCO NUTS-2 (Spain) -> docs/data/esp-geo.js
   fetch-hints.mjs   Wikipedia intros -> data/hints.raw.md  (raw material, not shipped)
   fetch-photos.mjs  landmark photos + credits from Wikimedia Commons -> photos/<topic>/
   scan-photos.mjs   photos/<topic>/ -> docs/img/<topic>/ + docs/data/<topic>-photos.js
@@ -46,6 +47,9 @@ docs/           this directory IS the published site (GitHub Pages, /docs on mai
     ue-geo.js       GENERATED — do not edit
     ue-hints.js     hand-written: Catalan names, capitals, articles, hooks (source of truth)
     ue-photos.js    GENERATED — do not edit
+    esp-geo.js      GENERATED — do not edit
+    esp-hints.js    hand-written: Catalan names, capitals, articles, hooks (source of truth)
+    esp-photos.js   GENERATED — do not edit
   sw.js         offline cache
 ```
 
@@ -136,6 +140,20 @@ recognise; they are clipped to a window slightly larger than the frame so the cu
 are never visible. Members and context go through one topology so shared borders stay
 welded. Names and capitals do not come from GISCO (its names are English):
 `ue-hints.js` is the source of truth, and the build refuses to run if the two disagree.
+
+**The Spain map: NUTS-2, its own projection, Canàries in an inset.** In Spain, NUTS
+level 2 is exactly the 17 comunitats plus Ceuta and Melilla. It is projected like the
+comarques (equirectangular scaled by cos of the mid-latitude) rather than in the EU's
+EPSG:3035, which is centred on 52°N 10°E and draws Spain visibly tilted. Portugal and
+France come from NUTS level 0 of the same dataset so their borders weld with Spain's.
+Canàries are shifted as a block into a framed box at the bottom left (`topic.insets`),
+the usual convention; the card says so, so nobody learns they sit off Portugal.
+
+**Capitals that are never asked.** A place with `capital: null` (Ceuta, Melilla) has no
+capital facet at all. `preguntaCapital: false` keeps the capital on the card but never
+asks it, for places whose capital has the same name (Luxemburg, Madrid, Múrcia) — the
+question would answer itself. A capital written `"A / B"` is two capitals (Canàries,
+Vallès Occidental): either is accepted, and the prompts switch to the plural.
 
 **Tap rings for tiny places.** Malta is about two pixels across at full extent and
 Luxembourg about six. Places under `SMALL` units² get a `mark`, which the map draws as a
