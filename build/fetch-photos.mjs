@@ -35,7 +35,7 @@ const LANDMARKS = {
     SI: { title: 'Triple Bridge', caption: 'Pont Triple i església franciscana · Ljubljana',
           file: 'Franciscan Church of the Annunciation and the Triple Bridge in the Center of Ljubljana, Slovenia (36394158722).jpg' },
     ES: { title: 'Alhambra', caption: 'L’Alhambra · Granada' },
-    EE: { title: ['Tallinn Old Town', 'Old Town of Tallinn'], caption: 'Ciutat vella · Tallinn' },
+    EE: { title: 'Tallinn Town Hall', caption: 'Ajuntament · Tallinn', file: 'Tallinna Raekoda 11-06-2013.jpg' },
     FI: { title: 'Helsinki Cathedral', caption: 'Catedral de Hèlsinki' },
     FR: { title: 'Eiffel Tower', caption: 'Torre Eiffel · París', file: 'Eiffel tower from trocadero.jpg' },
     EL: { title: 'Acropolis of Athens', caption: 'L’Acròpoli · Atenes' },

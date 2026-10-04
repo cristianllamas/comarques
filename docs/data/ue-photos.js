@@ -158,10 +158,10 @@ export const CREDITS = {
     "source": "https://commons.wikimedia.org/wiki/File:AlexanderNevskyCathedral-Sofia-6.jpg"
   },
   "EE": {
-    "caption": "Ciutat vella · Tallinn",
-    "author": "Ben Bender",
-    "license": "CC BY-SA 3.0",
-    "source": "https://commons.wikimedia.org/wiki/File:Old_Town_of_Tallinn,_Tallinn,_Estonia_-_panoramio_(58).jpg"
+    "caption": "Ajuntament · Tallinn",
+    "author": "Ivar Leidus",
+    "license": "CC BY-SA 3.0 ee",
+    "source": "https://commons.wikimedia.org/wiki/File:Tallinna_Raekoda_11-06-2013.jpg"
   },
   "PL": {
     "caption": "Plaça del Mercat de la ciutat vella · Varsòvia",
