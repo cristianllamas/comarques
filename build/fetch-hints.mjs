@@ -1,12 +1,12 @@
 // Pulls the Catalan Wikipedia intro for every comarca and its capital, as raw material
-// for the hand-written memory hooks in build/hints.js. Text only — no images are
+// for the hand-written memory hooks in docs/data/cat-hints.js. Text only — no images are
 // fetched (auto-picked photos proved unreliable: `Berguedà` returns the comarca flag,
 // not a landmark). Output is a scratch file for me to read, never shipped to the app.
 //
 // Run: node build/fetch-hints.mjs
 
 import { readFileSync, writeFileSync } from 'node:fs';
-import { COMARQUES } from '../docs/geo.js';
+import { COMARQUES } from '../docs/data/cat-geo.js';
 
 const API = 'https://ca.wikipedia.org/w/api.php';
 

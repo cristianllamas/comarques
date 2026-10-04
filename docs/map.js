@@ -1,11 +1,9 @@
-// The map: renders the comarques as tappable SVG paths, with pan and pinch-zoom.
+// The map: renders a topic's places as tappable SVG paths, with pan and pinch-zoom.
 //
 // Zoom is not a nicety here — Barcelonès, the Pla de l'Estany and the Garraf are only a
-// few millimetres across on a phone at full extent, and the exam expects him to find
-// them. Everything is driven by the viewBox so strokes stay crisp at any scale
+// few millimetres across on a phone at full extent, and the exam expects them to be
+// found. Everything is driven by the viewBox so strokes stay crisp at any scale
 // (vector-effect:non-scaling-stroke in styles.css).
-
-import { VIEWBOX, COMARQUES, PROVINCIES, OSONA_MERGED } from './geo.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const el = (n, a = {}) => {
@@ -18,29 +16,32 @@ const TAP_SLOP = 12;   // px of movement still counted as a tap, not a drag
 const TAP_TIME = 600;  // ms
 
 export class Mapa {
-  constructor({ onPick } = {}) {
-    const [, , w, h] = VIEWBOX.split(' ').map(Number);
+  constructor(topic) {
+    this.topic = topic;
+    const [, , w, h] = topic.viewBox.split(' ').map(Number);
     this.home = { x: 0, y: 0, w, h };
     this.view = { ...this.home };
-    this.onPick = onPick;
+    this.onPick = null;
     this.paths = new Map();
+    this.hidden = new Set();
 
-    this.svg = el('svg', { viewBox: VIEWBOX, class: 'mapa', role: 'img' });
-    this.gCom = el('g');
-    for (const c of COMARQUES) {
-      const p = el('path', { d: c.d, class: 'comarca' });
+    this.svg = el('svg', { viewBox: topic.viewBox, class: 'mapa', role: 'img' });
+    this.gZones = el('g');
+    for (const c of topic.places) {
+      const p = el('path', { d: c.d, class: 'zona' });
       p.dataset.code = c.code;
       this.paths.set(c.code, p);
-      this.gCom.append(p);
+      this.gZones.append(p);
     }
-    this.gProv = el('g', { 'aria-hidden': 'true' });
-    for (const p of PROVINCIES) this.gProv.append(el('path', { d: p.d, class: 'provincia' }));
+    this.gBorders = el('g', { 'aria-hidden': 'true' });
+    for (const d of topic.borders || []) this.gBorders.append(el('path', { d, class: 'provincia' }));
 
-    // drawn last so a highlighted comarca is never hidden under a neighbour's border
+    // drawn last so a highlighted place is never hidden under a neighbour's border
     this.gTop = el('g', { 'aria-hidden': 'true' });
     this.gLabels = el('g', { class: 'etiquetes', 'aria-hidden': 'true' });
-    this.svg.append(this.gCom, this.gProv, this.gTop, this.gLabels);
+    this.svg.append(this.gZones, this.gBorders, this.gTop, this.gLabels);
     this.labels = false;
+    this.labelCapitals = true;
 
     this.#bindGestures();
   }
@@ -48,18 +49,23 @@ export class Mapa {
   get element() { return this.svg; }
 
   /**
-   * 42-comarca mode: swap Osona for the Osona+Lluçanès outline and drop Lluçanès, so no
-   * stray border is left running through the middle of Osona.
+   * Apply the topic's on/off option. For the comarques, off is 42-comarca mode: Osona is
+   * swapped for the Osona+Lluçanès outline and Lluçanès is hidden, so no stray border is
+   * left running through the middle of Osona.
    */
-  setMerged(on) {
-    const osona = this.paths.get(OSONA_MERGED.code);
-    const lluc = this.paths.get('43');
-    if (osona) osona.setAttribute('d', on ? OSONA_MERGED.d : this.#original(OSONA_MERGED.code));
-    if (lluc) lluc.style.display = on ? 'none' : '';
-  }
-
-  #original(code) {
-    return COMARQUES.find((c) => c.code === code).d;
+  setToggle(on) {
+    const t = this.topic.toggle;
+    if (!t) return;
+    const { hide, replace } = t.whenOff;
+    this.hidden = new Set(on ? [] : hide);
+    for (const code of hide) {
+      const p = this.paths.get(code);
+      if (p) p.style.display = on ? '' : 'none';
+    }
+    if (replace) {
+      const p = this.paths.get(replace.code);
+      if (p) p.setAttribute('d', on ? this.topic.byCode.get(replace.code).d : replace.d);
+    }
   }
 
   setViewBox(v) {
@@ -70,7 +76,7 @@ export class Mapa {
 
   reset() { this.setViewBox({ ...this.home }); }
 
-  /** Zoom so one comarca fills a comfortable part of the screen. */
+  /** Zoom so one place fills a comfortable part of the screen. */
   focus(code, pad = 2.2) {
     const p = this.paths.get(code);
     if (!p) return;
@@ -94,16 +100,17 @@ export class Mapa {
   }
 
   /**
-   * Study map: show comarca + capital on every shape that has room for them.
+   * Study map: show the name (and the capital, if the pack asks for it) on every shape
+   * that has room for them.
    *
    * All 43 labels cannot fit at full extent — the Barcelona cluster alone would be an
    * unreadable pile — so labels are placed largest-comarca-first and any that would
    * collide with one already placed is dropped. Zooming in frees space and the rest
    * appear, which makes the zoom the way you read the crowded parts of the map.
    */
-  showLabels(on, merged = false) {
+  showLabels(on, capitals = true) {
     this.labels = on;
-    this.mergedLabels = merged;
+    this.labelCapitals = capitals;
     this.gLabels.style.display = on ? '' : 'none';
     if (on) this.layoutLabels();
   }
@@ -121,8 +128,8 @@ export class Mapa {
         && y >= this.view.y && y <= this.view.y + this.view.h;
     };
 
-    const candidates = COMARQUES
-      .filter((c) => !(this.mergedLabels && c.code === '43'))
+    const candidates = this.topic.places
+      .filter((c) => !this.hidden.has(c.code))
       .filter(inView)
       .sort((a, b) => b.area - a.area);   // big comarques win a collision
 
@@ -137,8 +144,9 @@ export class Mapa {
       l1.textContent = c.name.toUpperCase();
       const l2 = el('tspan', { x: ax, dy: u(NAME_PX * LINE), class: 'cap',
         'font-size': u(CAP_PX) });
-      l2.textContent = c.capital;
-      t.append(l1, l2);
+      l2.textContent = c.capital || '';
+      t.append(l1);
+      if (this.labelCapitals && c.capital) t.append(l2);
       return { c, t, l1, l2, ax, ay };
     });
     this.gLabels.replaceChildren(...made.map((m) => m.t));
@@ -154,7 +162,7 @@ export class Mapa {
     for (const m of made) {
       let fitted = null;
 
-      for (const attempt of ['complet', 'nomes-nom']) {
+      for (const attempt of m.l2.isConnected ? ['complet', 'nomes-nom'] : ['nomes-nom']) {
         if (attempt === 'nomes-nom') {
           m.l2.remove();
           m.l1.setAttribute('dy', u(NAME_PX * 0.35));
@@ -201,11 +209,11 @@ export class Mapa {
   /** Re-run the label layout after a resize or an orientation change. */
   refresh() { if (this.labels) this.layoutLabels(); }
 
-  /** Lift one comarca above its neighbours' borders. */
+  /** Lift one place above its neighbours' borders. */
   raise(code, cls) {
     const src = this.paths.get(code);
     if (!src) return;
-    const copy = el('path', { d: src.getAttribute('d'), class: `comarca ${cls}` });
+    const copy = el('path', { d: src.getAttribute('d'), class: `zona ${cls}` });
     this.gTop.append(copy);
   }
 
@@ -293,7 +301,7 @@ export class Mapa {
       if (!pts.size) start = null;
       if (!wasTap || !this.picking) return;
       const hit = document.elementFromPoint(e.clientX, e.clientY);
-      const path = hit && hit.closest && hit.closest('path.comarca');
+      const path = hit && hit.closest && hit.closest('path.zona');
       if (path && this.onPick) this.onPick(path.dataset.code);
     };
     this.svg.addEventListener('pointerup', end);

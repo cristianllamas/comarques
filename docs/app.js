@@ -1,34 +1,33 @@
-// Session orchestration: Fase 1 (repàs) then Fase 2 (recorda).
+// Session orchestration: Fase 1 (repàs) then Fase 2 (recorda), for whichever content
+// pack is active.
 //
-// Fase 1 shows answers — comarca, capital, hook, photo — with no demand on him. Fase 2
-// makes him produce them. That order is the point: exposure primes, retrieval fixes.
+// Fase 1 shows answers — name, capital, hook, photo — with no demand on the learner.
+// Fase 2 makes them produce them. That order is the point: exposure primes, retrieval
+// fixes.
 
-import { COMARQUES } from './geo.js';
-import { HINTS } from './hints.js';
-import { PHOTOS } from './photos.js';
+import { PACKS, packById } from './packs.js';
+import { loadTopic, activeCodes, activePairs } from './topics.js';
 import { Mapa } from './map.js';
-import { load, save, reset } from './store.js';
+import { load, save, packState, resetPack } from './store.js';
 import { isCorrect, masked } from './answer.js';
-import { buildQuestion, options, byCode } from './quiz.js';
-import { grade, markStudied, selectDue, selectExamMode, keyOf, newItem, progress }
+import { buildQuestion, options } from './quiz.js';
+import { grade, markStudied, selectDue, ensureOrder, keyOf, newItem, progress }
   from './scheduler.js';
 
 const STUDY_CARDS = 6;
 const QUIZ_CARDS = 12;
-const DAY = 86400e3;
 
 const app = document.getElementById('app');
-let state = load();
+const root = load();
+// The active pack: its definition, its topic (map + places) and its saved progress.
+let pack, topic, state;
 let mapa, session;
 
-const activeCodes = () =>
-  COMARQUES.map((c) => c.code).filter((c) => state.includeLlucanes || c !== '43');
-
-const examTime = () => (state.examDate ? new Date(`${state.examDate}T09:00`).getTime() : null);
-const examMode = () => {
-  const t = examTime();
-  return t ? t - Date.now() <= DAY && t > Date.now() : false;
-};
+const codes = () => activeCodes(topic, state.toggle);
+const pairs = () => activePairs(topic, pack, state.toggle);
+// The comarques-only pack never mentions capitals, not even on the cards.
+const asksCapital = () => pack.facets.includes('capital');
+const solution = (c) => `<b>${c.name}</b>` + (asksCapital() && c.capital ? ` — ${c.capital}` : '');
 
 const h = (tag, cls, html) => {
   const e = document.createElement(tag);
@@ -38,39 +37,77 @@ const h = (tag, cls, html) => {
 };
 
 function photoFor(code) {
-  const src = PHOTOS[code];
+  const src = topic.byCode.get(code)?.photo;
   if (!src) return null;
   const img = h('img', 'foto');
-  img.src = `img/capitals/${src}`;
+  img.src = src;
   img.alt = '';
   img.loading = 'lazy';
-  // Belt and braces: photos.js only lists files the build actually found, but if one
-  // goes missing later the card must still render rather than show a broken image.
+  // Belt and braces: the photo list only names files the build actually found, but if
+  // one goes missing later the card must still render rather than show a broken image.
   img.onerror = () => img.remove();
   return img;
+}
+
+/** Name, capital (if the pack asks for it), photo, hook and context for one place. */
+function placeCard(code, cls = 'fitxa') {
+  const c = topic.byCode.get(code);
+  const card = h('div', cls);
+  card.append(h('h2', null, c.name));
+  if (asksCapital() && c.capital) card.append(h('p', 'capital', `Capital: <b>${c.capital}</b>`));
+  const photo = photoFor(code);
+  if (photo) card.append(photo);
+  if (c.hook) card.append(h('p', 'pista', c.hook));
+  if (c.extra) card.append(h('p', 'prov', c.extra));
+  return card;
+}
+
+// ---------------------------------------------------------------- packs
+
+async function openPack(id) {
+  pack = packById(id);
+  topic = await loadTopic(pack.topic);
+  state = packState(root, id);
+  root.pack = id;
+  save(root);
+  mapa = new Mapa(topic);
+  mapa.setToggle(state.toggle);
+  render(screenHome());
+}
+
+/** First screen on a new device, and where "Canvia de tema" leads. */
+function screenPacks() {
+  const wrap = h('div', 'pantalla');
+  wrap.append(h('h1', null, 'Estudia geografia'));
+  wrap.append(h('p', 'sub', 'Què vols estudiar?'));
+  for (const p of PACKS) {
+    const b = h('button', 'tema');
+    b.append(h('span', 'tema-titol', p.title), h('span', 'tema-desc', p.desc));
+    const saved = root.packs[p.id];
+    if (saved?.sessions) {
+      b.append(h('span', 'tema-desc', `${saved.sessions} sessi${saved.sessions === 1 ? 'ó' : 'ons'} fetes`));
+    }
+    b.onclick = () => openPack(p.id);
+    wrap.append(b);
+  }
+  return wrap;
 }
 
 // ---------------------------------------------------------------- screens
 
 function screenHome() {
-  const p = progress(state, activeCodes());
-  const t = examTime();
-  const days = t ? Math.ceil((t - Date.now()) / DAY) : null;
+  const p = progress(state, pairs());
 
   const wrap = h('div', 'pantalla');
-  wrap.append(h('h1', null, 'Comarques'));
-
-  const sub = days == null ? 'Encara no has posat la data de l’examen.'
-    : days > 0 ? `Falten <b>${days}</b> dia${days === 1 ? '' : 's'} per l’examen.`
-    : 'L’examen és avui. Molta sort!';
-  wrap.append(h('p', 'sub', sub));
+  wrap.append(h('p', 'fase', 'Estudia geografia'));
+  wrap.append(h('h1', null, pack.title));
 
   const bar = h('div', 'barra');
   bar.append(h('span', null, ''));
   bar.firstChild.style.width = `${p.pct}%`;
   wrap.append(bar);
   wrap.append(h('p', 'sub',
-    `<b>${p.solid}</b> de ${p.total} preguntes dominades · ${p.seen} vistes`
+    `<b>${p.solid}</b> de ${p.total} preguntes dominades · ${p.seen} ${p.seen === 1 ? 'vista' : 'vistes'}`
     + (p.leeches ? ` · <b>${p.leeches}</b> que es resisteixen` : '')));
 
   const go = h('button', 'primari', state.sessions ? 'Continua' : 'Comença');
@@ -81,9 +118,13 @@ function screenHome() {
   look.onclick = () => render(screenStudyMap());
   wrap.append(look);
 
+  const change = h('button', 'discret', 'Canvia de tema');
+  change.onclick = () => render(screenPacks());
   const cfg = h('button', 'discret', 'Opcions');
   cfg.onclick = () => render(screenSettings());
-  wrap.append(cfg);
+  const links = h('div', 'enllacos');
+  links.append(change, cfg);
+  wrap.append(links);
 
   wrap.append(mapa.element);
   mapa.enablePicking(false);
@@ -96,41 +137,36 @@ function screenHome() {
 function screenSettings() {
   const wrap = h('div', 'pantalla');
   wrap.append(h('h1', null, 'Opcions'));
+  wrap.append(h('p', 'sub', pack.title));
 
-  const lab = h('label', 'camp', 'Data de l’examen');
-  const date = h('input');
-  date.type = 'date';
-  date.value = state.examDate || '';
-  date.onchange = () => { state.examDate = date.value || null; save(state); };
-  lab.append(date);
-  wrap.append(lab);
-
-  const tog = h('label', 'camp interruptor');
-  const cb = h('input');
-  cb.type = 'checkbox';
-  cb.checked = !!state.includeLlucanes;
-  cb.onchange = () => {
-    state.includeLlucanes = cb.checked;
-    save(state);
-    mapa.setMerged(!state.includeLlucanes);
-    count.textContent = `Ara estudia ${activeCodes().length} comarques.`;
-  };
-  tog.append(cb, h('span', null, 'Incloure el Lluçanès'));
-  wrap.append(tog);
-  const count = h('p', 'sub', `Ara estudia ${activeCodes().length} comarques.`);
-  wrap.append(count);
-  wrap.append(h('p', 'nota',
-    'El Lluçanès es va crear el 2023 separant-se d’Osona. Molts llibres encara no el '
-    + 'compten: si el seu és d’abans, deixa-ho desmarcat (42 comarques).'));
+  const t = topic.toggle;
+  if (t) {
+    const count = h('p', 'sub', '');
+    const showCount = () => { count.textContent = `Ara estudies ${codes().length} ${topic.words.many}.`; };
+    const tog = h('label', 'camp interruptor');
+    const cb = h('input');
+    cb.type = 'checkbox';
+    cb.checked = !!state.toggle;
+    cb.onchange = () => {
+      state.toggle = cb.checked;
+      save(root);
+      mapa.setToggle(state.toggle);
+      showCount();
+    };
+    tog.append(cb, h('span', null, t.label));
+    showCount();
+    wrap.append(tog, count, h('p', 'nota', t.note));
+  }
 
   const back = h('button', 'primari', 'Fet');
   back.onclick = () => render(screenHome());
   wrap.append(back);
 
-  const wipe = h('button', 'discret perill', 'Esborra el progrés');
+  const wipe = h('button', 'discret perill', 'Esborra el progrés d’aquest tema');
   wipe.onclick = () => {
-    if (confirm('Segur? Es perd tot el progrés.')) {
-      reset(); state = load(); render(screenHome());
+    if (confirm(`Segur? Es perd tot el progrés de «${pack.title}».`)) {
+      resetPack(root, pack.id);
+      openPack(pack.id);
     }
   };
   wrap.append(wipe);
@@ -139,10 +175,10 @@ function screenSettings() {
 
 
 /**
- * Free study: the whole map with the names on it, at his own pace.
+ * Free study: the whole map with the names on it, at the learner's own pace.
  *
  * Deliberately does not touch the scheduler. Browsing is not retrieval, and counting it
- * as practice would inflate "dominades" and starve the items he actually cannot do.
+ * as practice would inflate "dominades" and starve the items that genuinely are weak.
  */
 function screenStudyMap() {
   const wrap = h('div', 'pantalla');
@@ -153,8 +189,8 @@ function screenStudyMap() {
   wrap.append(mapa.element);
 
   const comptador = h('p', 'sub', '');
-  const fitxa = h('div', 'fitxa buida');
-  fitxa.innerHTML = '<p class="sub">Toca una comarca per veure-la de prop.</p>';
+  let fitxa = h('div', 'fitxa buida');
+  fitxa.innerHTML = `<p class="sub">${topic.words.tapToSee}</p>`;
 
   mapa.onLabels = (shown, total) => {
     comptador.innerHTML = shown < total
@@ -164,21 +200,13 @@ function screenStudyMap() {
 
   mapa.enablePicking(true);
   mapa.onPick = (code) => {
-    const c = byCode.get(code);
-    if (!c) return;
+    if (!topic.byCode.has(code)) return;
     mapa.clearMarks();
     mapa.mark(code, 'destacat');
     mapa.raise(code, 'destacat');
-    const hook = HINTS[code]?.hook;
-    fitxa.className = 'fitxa';
-    fitxa.innerHTML =
-      `<h2>${c.name}</h2>`
-      + `<p class="capital">Capital: <b>${c.capital}</b></p>`
-      + (hook ? `<p class="pista">${hook}</p>` : '')
-      + `<p class="prov">Província: ${c.provincia}`
-      + (c.provinciaNota ? ` <span class="nota">(${c.provinciaNota})</span>` : '') + '</p>';
-    const ph = photoFor(code);
-    if (ph) fitxa.append(ph);
+    const card = placeCard(code);
+    fitxa.replaceWith(card);
+    fitxa = card;
   };
 
   wrap.append(comptador, fitxa);
@@ -196,7 +224,7 @@ function screenStudyMap() {
   };
   wrap.append(home);
 
-  afterRender = () => mapa.showLabels(true, !state.includeLlucanes);
+  afterRender = () => mapa.showLabels(true, asksCapital());
   return wrap;
 }
 
@@ -204,39 +232,34 @@ function screenStudyMap() {
 
 function startSession() {
   const now = Date.now();
-  const codes = activeCodes();
-  const hard = examMode();
+  const ps = pairs();
+  ensureOrder(state, ps.map((p) => keyOf(p.code, p.facet)));
+  const picks = selectDue(state, ps, STUDY_CARDS + QUIZ_CARDS, now);
 
-  const picks = hard
-    ? selectExamMode(state, codes, QUIZ_CARDS)
-    : selectDue(state, codes, STUDY_CARDS + QUIZ_CARDS, now);
-
-  // Fase 1 and Fase 2 work on *different* comarques. Testing what he has just been shown
-  // measures short-term memory more than it builds long-term memory; the spacing effect
-  // says the test should come later. What he studies now gets tested in a later session,
-  // which the scheduler arranges on its own — these items are due again in 20 minutes.
-  const study = hard ? [] : picks.slice(0, STUDY_CARDS);
-  const quizEntries = hard ? picks : picks.slice(STUDY_CARDS, STUDY_CARDS + QUIZ_CARDS);
+  // Fase 1 and Fase 2 work on *different* places (selectDue never returns the same
+  // place twice). Testing what was just shown measures short-term memory more than it
+  // builds long-term memory; the spacing effect says the test should come later. What is
+  // studied now gets tested in a later session — these items are due again in 20 minutes.
+  const study = picks.slice(0, STUDY_CARDS);
+  const quizEntries = picks.slice(STUDY_CARDS, STUDY_CARDS + QUIZ_CARDS);
 
   session = {
     study, i: 0,
-    queue: quizEntries.map((e) => ({ entry: e, q: buildQuestion(e), rung: 0, missed: false })),
-    done: [], right: 0, hard,
+    queue: quizEntries.map((e) => ({ entry: e, q: buildQuestion(e, topic), rung: 0, missed: false })),
+    done: [], right: 0,
   };
 
   for (const e of study) {
     state.items[e.key] = markStudied(state.items[e.key] || newItem(), now);
   }
   state.sessions++; state.lastSession = now;
-  save(state);
+  save(root);
 
   render(study.length ? screenStudy() : screenQuiz());
 }
 
 function screenStudy() {
   const e = session.study[session.i];
-  const c = byCode.get(e.code);
-  const hint = HINTS[e.code] || {};
 
   const wrap = h('div', 'pantalla');
   wrap.append(h('p', 'fase', `Repàs · ${session.i + 1}/${session.study.length}`));
@@ -246,15 +269,7 @@ function screenStudy() {
   mapa.mark(e.code, 'destacat');
   afterRender = () => { mapa.focus(e.code); mapa.raise(e.code, 'destacat'); };
 
-  const card = h('div', 'fitxa');
-  card.append(h('h2', null, c.name));
-  card.append(h('p', 'capital', `Capital: <b>${c.capital}</b>`));
-  const photo = photoFor(e.code);
-  if (photo) card.append(photo);
-  if (hint.hook) card.append(h('p', 'pista', hint.hook));
-  card.append(h('p', 'prov', `Província: ${c.provincia}`
-    + (c.provinciaNota ? ` <span class="nota">(${c.provinciaNota})</span>` : '')));
-  wrap.append(card);
+  wrap.append(placeCard(e.code));
 
   const next = h('button', 'primari', session.i + 1 < session.study.length ? 'Següent' : 'A provar-ho');
   next.onclick = () => {
@@ -272,8 +287,7 @@ function screenQuiz() {
 
   const wrap = h('div', 'pantalla');
   const total = session.queue.length + session.done.length;
-  wrap.append(h('p', 'fase',
-    `${session.hard ? 'Mode examen' : 'Recorda'} · ${session.done.length + 1}/${total}`));
+  wrap.append(h('p', 'fase', `Recorda · ${session.done.length + 1}/${total}`));
 
   wrap.append(mapa.element);
   mapa.clearMarks();
@@ -297,7 +311,7 @@ function screenQuiz() {
       mapa.mark(q.code, 'correcte'); mapa.raise(q.code, 'correcte');
       mapa.focus(q.code, 3.5);
       settle(cur, ok, feedback, wrap, ok ? null
-        : `Aquesta és <b>${byCode.get(code).name}</b>. La que buscaves és aquesta.`);
+        : `Aquesta és <b>${topic.byCode.get(code).name}</b>. La que buscaves és aquesta.`);
     };
     wrap.append(feedback);
     return wrap;
@@ -310,7 +324,7 @@ function screenQuiz() {
   input.autocomplete = 'off';
   input.autocapitalize = 'words';
   input.spellcheck = false;
-  input.placeholder = q.kind === 'capital-of' ? 'La capital…' : 'La comarca…';
+  input.placeholder = q.kind === 'capital-of' ? 'La capital…' : topic.words.placeholder;
   const send = h('button', 'primari', 'Comprova');
   form.append(input, send);
   form.onsubmit = (ev) => { ev.preventDefault(); check(); };
@@ -350,7 +364,7 @@ function screenQuiz() {
       feedback.className = 'resposta';
       feedback.innerHTML = '<p class="ajuda">Tria la bona:</p>';
       const box = h('div', 'opcions');
-      for (const opt of options(q, activeCodes())) {
+      for (const opt of options(q, topic, codes())) {
         const b = h('button', 'opcio', opt);
         b.onclick = () => {
           box.querySelectorAll('button').forEach((x) => { x.disabled = true; });
@@ -371,11 +385,11 @@ function screenQuiz() {
 /** Record the result, show the answer, and move on. */
 function settle(cur, correct, feedback, wrap, extra) {
   const q = cur.q;
-  const c = byCode.get(q.code);
+  const c = topic.byCode.get(q.code);
   const now = Date.now();
   const key = cur.entry.key;
-  state.items[key] = grade(state.items[key] || newItem(), correct, now, examTime());
-  save(state);
+  state.items[key] = grade(state.items[key] || newItem(), correct, now);
+  save(root);
   if (correct) session.right++;
 
   session.queue.shift();
@@ -383,16 +397,16 @@ function settle(cur, correct, feedback, wrap, extra) {
   // A miss goes back into the same session — the second attempt, minutes later, is where
   // it starts to stick.
   if (!correct && !cur.requeued) {
-    session.queue.push({ ...cur, rung: 0, requeued: true, q: buildQuestion(cur.entry) });
+    session.queue.push({ ...cur, rung: 0, requeued: true, q: buildQuestion(cur.entry, topic) });
   }
 
   wrap.querySelectorAll('form, .opcions, .discret').forEach((x) => { x.remove(); });
   feedback.className = `resposta ${correct ? 'be' : 'malament'}`;
   feedback.innerHTML =
     `<p class="veredicte">${correct ? 'Molt bé!' : 'Era…'}</p>`
-    + `<p class="solucio"><b>${c.name}</b> — ${c.capital}</p>`
+    + `<p class="solucio">${solution(c)}</p>`
     + (extra ? `<p class="extra">${extra}</p>` : '')
-    + (HINTS[q.code]?.hook ? `<p class="pista">${HINTS[q.code].hook}</p>` : '');
+    + (c.hook ? `<p class="pista">${c.hook}</p>` : '');
 
   if (q.kind !== 'tap-map') { mapa.mark(q.code, 'correcte'); mapa.raise(q.code, 'correcte'); mapa.focus(q.code, 3.5); }
 
@@ -403,7 +417,7 @@ function settle(cur, correct, feedback, wrap, extra) {
 }
 
 function screenSummary() {
-  const p = progress(state, activeCodes());
+  const p = progress(state, pairs());
   const asked = session.done.length;
   const wrap = h('div', 'pantalla');
   wrap.append(h('h1', null, 'Sessió acabada'));
@@ -415,10 +429,7 @@ function screenSummary() {
   if (list.length) {
     wrap.append(h('p', 'sub', 'Per mirar-te un altre cop:'));
     const ul = h('ul', 'repas');
-    for (const d of list) {
-      const c = byCode.get(d.q.code);
-      ul.append(h('li', null, `<b>${c.name}</b> — ${c.capital}`));
-    }
+    for (const d of list) ul.append(h('li', null, solution(topic.byCode.get(d.q.code))));
     wrap.append(ul);
   } else {
     wrap.append(h('p', 'sub', 'Totes bé. '));
@@ -449,10 +460,9 @@ function render(screen) {
   if (fn) requestAnimationFrame(fn);
 }
 
-mapa = new Mapa({});
-window.addEventListener('resize', () => mapa.refresh());
-mapa.setMerged(!state.includeLlucanes);
-render(screenHome());
+window.addEventListener('resize', () => mapa?.refresh());
+if (packById(root.pack)) openPack(root.pack);
+else render(screenPacks());
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => { /* offline is a bonus, not a requirement */ });

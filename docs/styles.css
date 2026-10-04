@@ -33,7 +33,7 @@ h2{font-size:1.35rem;margin:0}
 svg.mapa{width:100%;height:auto;display:block;touch-action:none;
   background:var(--card);border-radius:12px;border:1px solid rgba(128,128,128,.22)}
 svg.mapa.triable{cursor:crosshair}
-svg.mapa .comarca{fill:var(--fill);stroke:var(--line);stroke-width:1;
+svg.mapa .zona{fill:var(--fill);stroke:var(--line);stroke-width:1;
   stroke-linejoin:round;vector-effect:non-scaling-stroke}
 svg.mapa .provincia{fill:none;stroke:var(--prov);stroke-width:3;
   stroke-linejoin:round;vector-effect:non-scaling-stroke;pointer-events:none}
@@ -87,8 +87,6 @@ button{font:inherit;cursor:pointer;border-radius:10px;padding:12px 16px;border:0
 .repas{margin:0;padding-left:20px}
 .repas li{margin:3px 0}
 .camp{display:flex;flex-direction:column;gap:6px;font-size:.95rem}
-.camp input[type=date]{font:inherit;padding:10px;border-radius:10px;
-  border:1.5px solid rgba(128,128,128,.4);background:var(--card);color:var(--ink)}
 .interruptor{flex-direction:row;align-items:center;gap:10px}
 .interruptor input{width:22px;height:22px;accent-color:var(--accent)}
 
@@ -101,3 +99,11 @@ svg.mapa .etiqueta .cap{font-weight:500;font-style:italic;fill:var(--fade)}
 .fitxa.buida{background:none;border:1px dashed rgba(128,128,128,.3)}
 .secundari{background:var(--card);color:var(--ink);
   border:1.5px solid rgba(128,128,128,.4);font-weight:600}
+.enllacos{display:flex;justify-content:space-between;gap:8px}
+
+/* pack picker ---------------------------------------------------------- */
+.tema{background:var(--card);color:var(--ink);text-align:left;
+  border:1.5px solid rgba(128,128,128,.4);display:flex;flex-direction:column;gap:2px}
+.tema:hover,.tema:focus-visible{border-color:var(--accent)}
+.tema-titol{font-weight:700;font-size:1.05rem}
+.tema-desc{color:var(--fade);font-size:.9rem}

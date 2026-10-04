@@ -9,16 +9,21 @@ several things are the way they are. Most of the entries under **Decisions** and
 ## Shape of the thing
 
 A static site. No framework, no bundler, no runtime dependencies — open `docs/index.html`
-and it runs. That is a deliberate choice for a one-week deadline: a toolchain is one more
-thing that can break the day before the exam.
+and it runs. That was a deliberate choice for a one-week deadline (a toolchain is one more
+thing that can break the day before an exam) and it has stayed that way.
+
+It started as a comarques-only app and became **content packs**: the learner picks one
+on the first screen. A pack is a *topic* (a map and its places) plus the *facets* it asks
+about, so "Comarques i capitals" and "Comarques" share the `cat` topic and differ only in
+whether capitals are asked. Everything below the pack layer is topic-agnostic.
 
 ```
 build/          run by hand; writes into docs/
   topology.mjs      shared-arc topology + Visvalingam simplification
-  fetch-geo.mjs     ICGC layers -> docs/geo.js          (the only generated data file)
+  fetch-geo.mjs     ICGC layers -> docs/data/cat-geo.js
   fetch-hints.mjs   Wikipedia intros -> data/hints.raw.md  (raw material, not shipped)
-  scan-photos.mjs   photos/ -> docs/img/capitals/ + docs/photos.js
-  sim-scheduler.mjs simulates a week; asserts coverage
+  scan-photos.mjs   photos/<topic>/ -> docs/img/<topic>/ + docs/data/<topic>-photos.js
+  sim-scheduler.mjs simulates a week per pack; asserts coverage
   e2e.mjs           drives real Chrome over DevTools Protocol
 
 docs/           this directory IS the published site (GitHub Pages, /docs on main)
@@ -28,19 +33,24 @@ docs/           this directory IS the published site (GitHub Pages, /docs on mai
   scheduler.js  Leitner boxes, due-selection    (pure, no DOM)
   answer.js     answer matching, masked hints   (pure, no DOM)
   quiz.js       question construction           (pure, no DOM)
-  store.js      localStorage read/write
-  geo.js        GENERATED — do not edit
-  hints.js      hand-written memory hooks + articles
-  photos.js     GENERATED — do not edit
+  store.js      localStorage read/write, per pack; migrates the old comarques.v1
+  packs.js      the content packs: topic + facets + title
+  topics.js     assembles a topic from data/ into one shape (places, borders, words, toggle)
+  data/
+    cat-geo.js      GENERATED — do not edit
+    cat-hints.js    hand-written memory hooks + articles
+    cat-photos.js   GENERATED — do not edit
   sw.js         offline cache
 ```
 
-`scheduler.js`, `answer.js` and `quiz.js` touch no DOM on purpose — that is what lets
-`sim-scheduler.mjs` import and exercise them directly in Node.
+`scheduler.js`, `answer.js`, `quiz.js`, `packs.js` and `topics.js` touch no DOM on
+purpose — that is what lets `sim-scheduler.mjs` import and exercise them directly in Node.
+Topics are loaded with dynamic `import()`, so opening one pack does not download every
+map.
 
 ## Data
 
-`docs/geo.js` exports:
+`docs/data/cat-geo.js` exports:
 
 ```js
 VIEWBOX      // "0 0 1000 986.85"
@@ -55,25 +65,33 @@ joins on: `HINTS[code]`, `PHOTOS[code]`, and the scheduler's `"<code>:<facet>"`.
 `label` is where the study-map text goes; `centroid` is kept separately because the two
 are not the same point (see Decisions). `area` breaks ties when labels collide.
 
-Progress in `localStorage` under `comarques.v1`:
+`topics.js` turns those files into a topic every other module uses without knowing which
+map it is: `{ viewBox, places: [{ code, name, capital, art, hook, accepta, photo, extra,
+label, area, d }], borders, words, toggle }`. `words` holds the topic's phrasing ("Quina
+comarca és la destacada?"); `toggle` is an optional on/off option, used for Lluçanès.
+
+Progress in `localStorage` under `geografia.v2`, one entry per pack:
 
 ```js
-{ items: { "14:lloc": { box, due, seen, wrong, streak, last }, … },
-  examDate, includeLlucanes, sessions, lastSession }
+{ pack: "comarques-capitals",
+  packs: { "comarques-capitals": {
+    items: { "14:lloc": { box, due, seen, wrong, streak, last }, … },
+    order: ["31:capital", "07:lloc", …],   // shuffled introduction order
+    toggle, sessions, lastSession } } }
 ```
 
-Two **facets** per comarca — `lloc` (where it is) and `capital` (what its capital is) —
-because they are genuinely different memories. 43 × 2 = 86 items.
+Up to two **facets** per place — `lloc` (where it is) and `capital` (what its capital
+is) — because they are genuinely different memories. A pack lists the facets it asks;
+a place with no capital never gets a capital facet.
 
 ## Tunables
 
 | Where | Constant | Now | Notes |
 |---|---|---|---|
 | `app.js` | `STUDY_CARDS` / `QUIZ_CARDS` | 6 / 12 | session length |
-| `scheduler.js` | `BOX_MINUTES` | 20m, 2h, 8h, 1d, 2d | intervals per box |
+| `scheduler.js` | `BOX_MINUTES` | 20m, 2h, 8h, 1d, 2d, 4d, 8d | intervals per box |
 | `scheduler.js` | `LEECH_WRONG` | 3 | failures before force-feeding |
 | `scheduler.js` | `COOLDOWN` | 12 min | no repeat within a sitting |
-| `scheduler.js` | `CLIP_BEFORE_EXAM` | 6 h | last chance to resurface |
 | `fetch-geo.mjs` | `TARGET_COMARQUES` | 9000 | vertices kept (≈225 KB output) |
 
 After changing any scheduler constant, run `node build/sim-scheduler.mjs` — it will tell
@@ -84,9 +102,33 @@ you if coverage broke.
 ## Decisions
 
 **Leitner, not SM-2 or FSRS.** Those optimise six-month retention and schedule in
-days-to-months; with an exam a week out they would show most comarques once. Intervals
-here top out at two days and are clipped so nothing is scheduled after `examDate`. If
-this app is ever repurposed for long-term study, this is the first thing to revisit.
+days-to-months; for school geography studied over a week or two they would show most
+places once. Intervals here top out at eight days. If this app is ever repurposed for
+long-term study, this is the first thing to revisit.
+
+**No exam date.** The first version took an exam date, showed a countdown, clipped every
+interval to land before it and switched to a drill-the-weakest "exam mode" on the last
+day. Nobody set it in practice, so it was removed along with the clipping. The boxes
+grew 4d and 8d so well-known items stop crowding out weak ones once there is no
+deadline to compress towards.
+
+**New items arrive in a shuffled order that is saved.** Without it they came out in code
+order — alphabetical — so every learner started with the Alt Camp and the Alts. The
+shuffle is done once per pack (`ensureOrder`) and kept, so reopening the app does not
+reshuffle.
+
+**One place at most once per session.** `selectDue` skips a place it has already picked.
+Before this, both facets of a place came out together and Fase 1 showed the same card
+twice in a row, and Fase 2 could ask the capital of a comarca Fase 1 had just shown.
+
+**Packs keep separate progress, even when they share a map.** Knowing where the Bages is
+in "Comarques" says nothing about its capital, and merging the two would make one pack's
+"dominades" leak into the other.
+
+**Old progress is copied, never moved.** `store.js` copies `comarques.v1` into the new
+shape on first load and leaves the original in place. The tag `pre-packs` marks the last
+comarques-only version; if the app is ever rolled back to it, that version finds its
+data where it left it.
 
 **Coverage outranks box level in `selectDue`.** `urgency = seen*10 + box*4 − leech*15`.
 Two earlier orderings both failed `sim-scheduler.mjs`:
@@ -203,8 +245,8 @@ DevTools Protocol using Node's built-in `WebSocket`.
 works unchanged. Decide which `facet` it belongs to so the scheduler tracks it sensibly.
 
 **Adding a field per comarca** (population, rivers, …). Emit it in `fetch-geo.mjs` where
-`comarques` is built, or hand-write it in `docs/hints.js` if it is editorial. `hints.js`
-is the right home for anything written rather than derived — `fetch-hints.mjs` only
+`comarques` is built, or hand-write it in `docs/data/cat-hints.js` if it is editorial.
+The hints file is the right home for anything written rather than derived — `fetch-hints.mjs` only
 produces raw material to write *from* and its output is not shipped.
 
 **Refreshing the boundaries.** `rm data/*.raw.geojson && node build/fetch-geo.mjs`. The
@@ -212,7 +254,12 @@ integrity checks at the end (43 features, every capital present, província coun
 there to catch an upstream change; if they fire, believe them.
 
 **If a new comarca is ever created**, it will arrive in the ICGC data automatically, but
-`docs/hints.js` needs a `hook` and an `art` (the Catalan article is irregular and must be
-stated, not guessed), and `EXPECTED` in `fetch-geo.mjs` needs updating. The Lluçanès
-toggle and the `dissolve()` call are specific to Osona/Lluçanès and would need
-generalising.
+`docs/data/cat-hints.js` needs a `hook` and an `art` (the Catalan article is irregular and must be
+stated, not guessed), and `EXPECTED` in `fetch-geo.mjs` needs updating. The `dissolve()`
+call is specific to Osona/Lluçanès; the toggle itself is generic (`topic.toggle.whenOff`
+lists what to hide and which outline to swap in).
+
+**Adding a pack.** If the topic exists, it is one entry in `packs.js`. A new topic needs
+its files in `docs/data/` (`<id>-geo.js`, `<id>-hints.js`, `<id>-photos.js`), a loader in
+`topics.js`, the files listed in `sw.js`, and a run of `sim-scheduler.mjs`, which
+simulates every pack in `PACKS`.
