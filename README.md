@@ -2,7 +2,7 @@
 
 A small offline web app for school geography, organised in **content packs**: the
 learner picks one on the first screen (*Comarques i capitals*, *Comarques*), each with
-its own progress, and can switch with *Canvia de tema*. Install it on a phone from
+its own progress, and can switch with *Packs de contingut* in the header. Install it on a phone from
 **https://cristianllamas.github.io/comarques/** (Chrome → *Afegeix a la pantalla d'inici*).
 
 ## How it works

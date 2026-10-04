@@ -99,7 +99,11 @@ svg.mapa .etiqueta .cap{font-weight:500;font-style:italic;fill:var(--fade)}
 .fitxa.buida{background:none;border:1px dashed rgba(128,128,128,.3)}
 .secundari{background:var(--card);color:var(--ink);
   border:1.5px solid rgba(128,128,128,.4);font-weight:600}
-.enllacos{display:flex;justify-content:space-between;gap:8px}
+.enllacos{display:flex;justify-content:flex-end;gap:8px}
+.capcalera{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding-bottom:10px;border-bottom:1px solid rgba(128,128,128,.22)}
+.marca{font-weight:700;color:var(--accent)}
+.petit{padding:8px 12px;font-size:.9rem}
 
 /* pack picker ---------------------------------------------------------- */
 .tema{background:var(--card);color:var(--ink);text-align:left;

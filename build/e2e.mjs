@@ -160,7 +160,7 @@ async function finishSession() {
 await sleep(900);
 console.log('\n1. pack picker');
 let t = await text();
-check(/Estudia geografia/.test(t), 'title renders');
+check(/Estudia geografia/i.test(t), 'title renders');
 check(/Què vols estudiar/.test(t), 'a new device starts on the pack picker');
 check(await evaluate('document.querySelectorAll("button.tema").length') >= 2, 'packs are listed');
 await shot('0-packs');
@@ -328,7 +328,7 @@ check(saved?.pack === 'comarques-capitals', 'the chosen pack is remembered');
 console.log('\n9. second pack: comarques without capitals');
 await clickText('Inici');
 await sleep(250);
-check(await clickText('Canvia de tema') === 'ok', 'home leads back to the pack picker');
+check(await clickText('☰ Packs de contingut') === 'ok', 'the header leads back to the pack picker');
 await sleep(250);
 check(/sessi/.test(await text()), 'the picker shows sessions done in a pack');
 await clickPack('Comarques');

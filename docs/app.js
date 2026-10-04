@@ -75,10 +75,11 @@ async function openPack(id) {
   render(screenHome());
 }
 
-/** First screen on a new device, and where "Canvia de tema" leads. */
+/** First screen on a new device, and where "Packs de contingut" leads. */
 function screenPacks() {
   const wrap = h('div', 'pantalla');
-  wrap.append(h('h1', null, 'Estudia geografia'));
+  wrap.append(h('p', 'fase', 'Estudia geografia'));
+  wrap.append(h('h1', null, 'Packs de contingut'));
   wrap.append(h('p', 'sub', 'Què vols estudiar?'));
   for (const p of PACKS) {
     const b = h('button', 'tema');
@@ -99,7 +100,16 @@ function screenHome() {
   const p = progress(state, pairs());
 
   const wrap = h('div', 'pantalla');
-  wrap.append(h('p', 'fase', 'Estudia geografia'));
+
+  // The pack is the top of the hierarchy — everything else on this screen belongs to
+  // it — so switching packs lives in the header, not among the screen's own options.
+  const top = h('header', 'capcalera');
+  top.append(h('span', 'marca', 'Estudia geografia'));
+  const packs = h('button', 'secundari petit', '☰ Packs de contingut');
+  packs.onclick = () => render(screenPacks());
+  top.append(packs);
+  wrap.append(top);
+
   wrap.append(h('h1', null, pack.title));
 
   const bar = h('div', 'barra');
@@ -118,12 +128,10 @@ function screenHome() {
   look.onclick = () => render(screenStudyMap());
   wrap.append(look);
 
-  const change = h('button', 'discret', 'Canvia de tema');
-  change.onclick = () => render(screenPacks());
   const cfg = h('button', 'discret', 'Opcions');
   cfg.onclick = () => render(screenSettings());
   const links = h('div', 'enllacos');
-  links.append(change, cfg);
+  links.append(cfg);
   wrap.append(links);
 
   wrap.append(mapa.element);
@@ -162,7 +170,7 @@ function screenSettings() {
   back.onclick = () => render(screenHome());
   wrap.append(back);
 
-  const wipe = h('button', 'discret perill', 'Esborra el progrés d’aquest tema');
+  const wipe = h('button', 'discret perill', 'Esborra el progrés d’aquest pack');
   wipe.onclick = () => {
     if (confirm(`Segur? Es perd tot el progrés de «${pack.title}».`)) {
       resetPack(root, pack.id);
