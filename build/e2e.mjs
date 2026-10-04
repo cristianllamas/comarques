@@ -2,7 +2,9 @@
 // and fails on any console error or unhandled rejection. No test framework and no npm
 // install — Node's built-in WebSocket is enough.
 //
-// Run: node build/e2e.mjs        (add SHOTS=1 to write screenshots to /tmp)
+// Run: node build/e2e.mjs        (SHOTS=1 writes screenshots to /tmp/e2e-*.png;
+//                                  SHOTS=screenshots writes them into that folder, which
+//                                  is how the README's screenshots are regenerated)
 
 import { spawn } from 'node:child_process';
 import { rmSync } from 'node:fs';
@@ -12,6 +14,7 @@ const PORT = 8731, DEBUG = 9333;
 // URL=https://... runs the same checks against the deployed site instead of a local one.
 const TARGET = process.env.URL || `http://localhost:${PORT}/`;
 const shots = !!process.env.SHOTS;
+const shotPath = (name) => (process.env.SHOTS === '1' ? `/tmp/e2e-${name}.png` : `${process.env.SHOTS}/${name}.png`);
 
 // Always start from a clean profile: a leftover localStorage from the previous run
 // changes the first screen ("Continua" instead of "Comença") and the test drifts.
@@ -87,7 +90,8 @@ const shot = async (name) => {
   if (!shots) return;
   const { data } = await send('Page.captureScreenshot', { format: 'png' });
   const fs = await import('node:fs');
-  fs.writeFileSync(`/tmp/e2e-${name}.png`, Buffer.from(data, 'base64'));
+  if (process.env.SHOTS !== '1') fs.mkdirSync(process.env.SHOTS, { recursive: true });
+  fs.writeFileSync(shotPath(name), Buffer.from(data, 'base64'));
 };
 
 const text = () => evaluate('document.getElementById("app").innerText');
@@ -184,6 +188,7 @@ console.log('\n3. settings: Lluçanès toggle, no exam date');
 await clickText('Opcions');
 await sleep(200);
 check(!(await evaluate('!!document.querySelector("input[type=date]")')), 'there is no exam date setting');
+await shot('2-settings');
 await evaluate(`(()=>{const c=document.querySelector('input[type=checkbox]');
   c.checked=true; c.dispatchEvent(new Event('change')); })()`);
 t = await text();

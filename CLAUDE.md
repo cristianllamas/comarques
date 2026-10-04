@@ -5,6 +5,7 @@ Catalunya (with or without capitals), the EU member states and the comunitats
 autònomes of Spain, with their capitals. Correctness of the content matters
 more than polish.
 
+`README.md` describes the app from the learner's side, screen by screen.
 **Read `ARCHITECTURE.md` before changing anything.** It records why several
 non-obvious things are the way they are, and most of those entries were paid for with a
 bug. In particular, do not "simplify" the scheduler's urgency formula, the arc-cutting
@@ -24,6 +25,8 @@ rule, or the deferred `afterRender` map focus without reading the corresponding 
   live in the `art` field in the hints file — never derive them from the name.
 - **Bump `CACHE` in `docs/sw.js`** whenever a shipped file changes, or installed clients
   keep serving the old build.
+- **Content is reviewed by the owner before it ships** — names, capitals, hooks and every
+  photo (via a contact sheet). Work on a branch; `main` deploys.
 
 ## Before saying something works
 
@@ -35,6 +38,7 @@ node build/e2e.mjs             # real Chrome, full session, fails on any console
 Both are fast and need no setup beyond `google-chrome` and `python3`. `SHOTS=1` on the
 e2e writes screenshots to `/tmp/e2e-*.png` — worth looking at, since two real bugs (a
 blank map, clipped labels) were invisible in code and obvious in a screenshot.
+`SHOTS=screenshots` regenerates the README's screenshots after a UI change.
 
 To check what is actually deployed rather than what is local:
 

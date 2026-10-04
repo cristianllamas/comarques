@@ -391,7 +391,8 @@ function screenQuiz() {
       feedback.innerHTML = '<p class="ajuda">Tria la bona:</p>';
       const box = h('div', 'opcions');
       for (const opt of options(q, topic, codes())) {
-        const b = h('button', 'opcio', opt);
+        // Two capitals read "A i B" as everywhere else; the check still uses the raw value.
+        const b = h('button', 'opcio', opt.split('/').map((x) => x.trim()).join(' i '));
         b.onclick = () => {
           box.querySelectorAll('button').forEach((x) => { x.disabled = true; });
           const ok = isCorrect(opt, q.answer, q.accepta);
