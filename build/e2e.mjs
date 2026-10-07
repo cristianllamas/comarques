@@ -597,7 +597,7 @@ check(/Marine Regions/.test(await text()), 'the study map credits the IHO data')
 // A tap on land must not pick the ocean under it: the Sahara is not the Atlantic.
 await evaluate(`(()=>{const svg=document.querySelector('svg.mapa.triable');
   const land=svg.querySelector('path.terra'); const m=land.getScreenCTM();
-  const pt=new DOMPoint(530, 180).matrixTransform(m);
+  const pt=new DOMPoint(528, 268).matrixTransform(m);   // 10°E 23°N in the map's projection
   const o={bubbles:true,clientX:pt.x,clientY:pt.y,pointerId:1,pointerType:'touch',isPrimary:true};
   svg.dispatchEvent(new PointerEvent('pointerdown',o)); svg.dispatchEvent(new PointerEvent('pointerup',o));})()`);
 await sleep(300);
