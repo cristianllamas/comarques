@@ -1,11 +1,12 @@
 # Fotos
 
 Una carpeta per tema: `cat/` (comarques), `esp/` (comunitats autònomes), `ue/` (Unió
-Europea). Deixa-hi les fotos i executa `node build/scan-photos.mjs cat` (amb el nom de la
-carpeta).
+Europea), `afr/` (Àfrica), `amn/` (Amèrica del Nord i Central), `ams/` (Amèrica del Sud)
+i `asi/` (Àsia). Deixa-hi les fotos i executa `node build/scan-photos.mjs cat` (amb el nom
+de la carpeta). Els oceans i els mars no tenen fotos.
 
-Les fotos d'`esp/` i `ue/` les baixa `node build/fetch-photos.mjs esp` (o `ue`) de
-Wikimedia Commons, a partir dels monuments triats a mà dins d'aquell script, i en desa
+Les fotos de tots els temes excepte `cat/` les baixa `node build/fetch-photos.mjs <tema>`
+de Wikimedia Commons, a partir dels monuments triats a mà dins d'aquell script, i en desa
 l'autor i la llicència a `credits.json`; l'app ho mostra sota la foto. Per canviar-ne una,
 fixa-hi un fitxer concret amb `file:` a l'script.
 

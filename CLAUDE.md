@@ -47,6 +47,10 @@ To check what is actually deployed rather than what is local:
 URL=https://cristianllamas.github.io/comarques/ node build/e2e.mjs
 ```
 
+A push to `main` has once failed to start a Pages build at all: check that
+`gh api repos/cristianllamas/comarques/pages/builds/latest` names your commit before
+testing the live site (and see the Traps in `ARCHITECTURE.md` if it does not).
+
 ## Content accuracy
 
 This teaches children facts for school exams, so wrong data is worse than a missing

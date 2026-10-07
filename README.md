@@ -174,6 +174,9 @@ Correct content matters more than anything else here: this teaches facts for exa
   [Marine Regions](https://www.marineregions.org) (CC BY 4.0, credited on the study map);
   an ocean is all of its seas, and each sea's ocean follows the IHO's grouping (the
   Mediterrani belongs to the Atlàntic). The Caspi, a closed sea, comes from Natural Earth.
+  These two maps use a cylindrical projection (Gall stereographic), chosen so the world is
+  tall enough to read on a phone; as on most classroom wall maps, Greenland, the Arctic
+  and Antarctica look bigger than they really are.
 - **Two cases with no official capital:** the País Basc and Castella i Lleó have no
   capital set by law. The app uses the seats of government, Vitòria and Valladolid (the
   usual textbook answer), and the hook says so.
