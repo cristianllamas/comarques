@@ -293,7 +293,7 @@ point-in-polygon, dissolve, clipping, and `processLayer` which runs the whole ch
 | | `fetch-geo-mon.mjs` (afr amn ams asi) | `fetch-geo-mar.mjs` (oce mar) |
 |---|---|---|
 | Source | GISCO countries 2024 1:10M, EPSG:4326 | Marine Regions IHO Sea Areas v3 (CC BY), Natural Earth (Caspi), GISCO (land) |
-| Projection | equal-area per continent: LAEA (afr, ams), Albers (amn, asi) | Equal Earth, centred on Greenwich |
+| Projection | equal-area per continent: LAEA (afr, ams), Albers (amn, asi) | Gall stereographic, centred on Greenwich, 84°N–72°S |
 | Special | Taiwan, Guaiana Francesa cut out; disputed areas to their administrator; far-off parts dropped (Hawaii); antimeridian seam welded | T-junctions welded; land drawn over the water; borders as their own layer |
 | Asserts | the count per topic, every hint has geometry, label inside | 5 oceans, every sea, every IHO area in an ocean, each sea's `ocea` = the IHO's |
 | Output | 80–245 KB each | ≈95 + 45 + 195 KB |
@@ -542,6 +542,12 @@ between *different* places are emitted as `BORDERS`. A couple of short stretches
 missing from that layer for the same reason (south of Cape Horn); highlighting a place
 still shows its whole extent.
 
+**The world maps are cylindrical, not equal-area.** They were Equal Earth first, which is
+2.1:1 however much of the poles is cropped: a strip about 180 px tall on a phone. Gall
+stereographic cropped to 84°N–72°S is 1.6:1, and on a phone the water maps also take the
+full screen width. Greenland, the Arctic and Antarctica look bigger than they are; for
+finding where a sea is, that was the better trade.
+
 **Small packs study a third.** See *A session*: without `studyCount` the oceans pack
 was all cards and no questions.
 
@@ -613,7 +619,7 @@ look impossible, check for an orphan on port 9333.
 sides share no vertex, so the cut showed as a line across Chukotka. `fetch-geo-mon.mjs`
 snaps it to ±180, gives both sides the union of the seam's vertices (`weldSeam`) and
 dissolves the pieces. `relLon` wraps +180 onto −180, which is right for a continent and
-wrong for a world map: `equalEarth` keeps both edges.
+wrong for a world map: `gallStereographic` (and `equalEarth`) keep both edges.
 
 **The IHO sea areas do not always share vertices.** The North Atlantic describes the
 equator off Africa with a vertex every 0.09°, the South Atlantic with one segment, so the

@@ -451,3 +451,18 @@ export function weldTJunctions(features, { minLen = 0.05, eps = 1e-7, cell = 0.5
   out.inserted = inserted;
   return out;
 }
+
+/**
+ * Gall stereographic: a cylindrical world map, as on many classroom walls. Not
+ * equal-area (Greenland and Antarctica grow), but about 1.6:1 once the poles are cropped,
+ * against Equal Earth's 2.1:1 — which on a phone is the difference between a strip and a
+ * map. Used for the oceans and seas, where finding the place matters more than its size.
+ */
+export function gallStereographic(lon0 = 0) {
+  const k = 1 + Math.SQRT2 / 2;
+  return ([lon, lat]) => {
+    let d = lon - lon0;
+    if (d > 180) d -= 360; else if (d < -180) d += 360;
+    return [(R * d * RAD) / Math.SQRT2, R * k * Math.tan((lat * RAD) / 2)];
+  };
+}

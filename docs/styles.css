@@ -68,6 +68,10 @@ svg.mapa .limit{fill:none;stroke:var(--limit);stroke-width:1;stroke-linejoin:rou
 svg.mapa .terra{fill:var(--terra);stroke:var(--ctx-line);stroke-width:.4;
   vector-effect:non-scaling-stroke}
 svg.mapa.aigua .anella{stroke:var(--prov)}
+/* A world map is wide and short: on a phone it gets the whole screen width, margins included. */
+@media (max-width:600px){
+  svg.mapa.aigua{width:calc(100% + 32px);margin:0 -16px;border-radius:0;border-left:0;border-right:0}
+}
 
 /* cards & text --------------------------------------------------------- */
 .fitxa{background:var(--card);border:1px solid rgba(128,128,128,.22);
