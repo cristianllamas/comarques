@@ -6,14 +6,13 @@
 
 import { PACKS } from '../docs/packs.js';
 import { loadTopic, activePairs } from '../docs/topics.js';
-import { grade, markStudied, selectDue, ensureOrder, keyOf, newItem, progress }
-  from '../docs/scheduler.js';
+import { grade, markStudied, selectDue, ensureOrder, keyOf, newItem, progress,
+  STUDY_CARDS, QUIZ_CARDS, studyCount } from '../docs/scheduler.js';
 
 const H = 3600e3, D = 24 * H;
 const start = Date.UTC(2026, 8, 23, 7, 0);
 const HOURS = (process.env.HOURS || '8,16,21').split(',').map(Number);
 const DAYS = 7;
-const STUDY = 6, QUIZ = 12;
 
 let failed = 0;
 
@@ -48,7 +47,8 @@ for (const pack of PACKS.filter((p) => !process.env.PACK || p.id === process.env
     for (const hour of HOURS) {
       const now = start + day * D + (hour - 7) * H;
       // A real session is Fase 1 (6 study cards) then Fase 2 (12 questions).
-      const picks = selectDue(state, pairs, STUDY + QUIZ, now);
+      const picks = selectDue(state, pairs, STUDY_CARDS + QUIZ_CARDS, now);
+      const STUDY = studyCount(picks.length);
       if (new Set(picks.map((p) => p.code)).size !== picks.length) repeats++;
 
       for (const p of picks.slice(0, STUDY)) {

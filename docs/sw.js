@@ -1,12 +1,17 @@
 // Offline cache. Everything is precached on install so the first tap after
 // "add to home screen" works on the bus with no signal.
-const CACHE = 'comarques-v14';
+const CACHE = 'comarques-v15';
 const FILES = [
   '.', 'index.html', 'styles.css', 'app.js', 'map.js', 'quiz.js', 'scheduler.js',
   'answer.js', 'store.js', 'packs.js', 'topics.js', 'manifest.json', 'icon.svg',
   'data/cat-geo.js', 'data/cat-hints.js', 'data/cat-photos.js',
   'data/ue-geo.js', 'data/ue-hints.js', 'data/ue-photos.js',
   'data/esp-geo.js', 'data/esp-hints.js', 'data/esp-photos.js',
+  'data/afr-geo.js', 'data/afr-hints.js', 'data/afr-photos.js',
+  'data/amn-geo.js', 'data/amn-hints.js', 'data/amn-photos.js',
+  'data/ams-geo.js', 'data/ams-hints.js', 'data/ams-photos.js',
+  'data/asi-geo.js', 'data/asi-hints.js', 'data/asi-photos.js',
+  'data/oce-geo.js', 'data/oce-hints.js', 'data/mar-geo.js', 'data/mar-hints.js', 'data/terra-geo.js',
 ];
 
 self.addEventListener('install', (e) => {

@@ -50,11 +50,12 @@ export function isCorrect(input, answer, extra = []) {
 /**
  * Progressive reveal:  "Berga" -> "B _ _ _ _"
  * A leading article is shown in full and the reveal moves to the next word, because
- * uncovering the "l" of "la Seu d'Urgell" tells him nothing.
+ * uncovering the "l" of "la Seu d'Urgell" tells him nothing. The same goes for the
+ * generic noun of a sea or an ocean: "mar de Barents" -> "mar de B _ _ _ _ _ _".
  */
 export function masked(answer) {
   const first = String(answer).split('/')[0].trim();
-  const m = first.match(/^(els|les|el|la|l['’])\s*/i);
+  const m = first.match(/^(?:(?:mar|golf|oceà)\s+(?:de la |de l['’]|del |de |d['’])?|(?:els|les|el|la|l['’])\s*)/i);
   const head = m ? m[0] : '';
   const body = first.slice(head.length);
   const revealed = body.split('').map((ch, i) =>

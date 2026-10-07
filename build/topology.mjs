@@ -105,6 +105,7 @@ export function buildTopology(features) {
   const sig = new Map();
   for (const [k, s] of owners) sig.set(k, [...s].sort((a, b) => a - b).join('|'));
 
+
   const arcs = [];
   const arcIndex = new Map(); // canonical key -> arc id
 
@@ -175,8 +176,16 @@ export function simplifyTopology({ arcs, shapes }, targetPoints) {
   const drop = Math.max(0, all.length - targetPoints);
   const threshold = drop > 0 ? all[Math.min(drop, all.length - 1)] : 0;
 
-  const simplified = arcs.map((pts, i) =>
-    pts.filter((_, j) => weights[i][j] >= threshold));
+  const simplified = arcs.map((pts, i) => {
+    const w = weights[i];
+    const kept = pts.filter((_, j) => w[j] >= threshold);
+    // A small island is one arc closing on itself, and under a global threshold it
+    // collapses to a line and is dropped — taking a whole country with it when the island
+    // *is* the country (Barbados, the Maldives). Keep its three most significant points.
+    if (kept.length >= 5 || pts.length < 5 || key(pts[0]) !== key(pts[pts.length - 1])) return kept;
+    const top = new Set([...w.keys()].slice(1, -1).sort((a, b) => w[b] - w[a]).slice(0, 3));
+    return pts.filter((_, j) => w[j] >= threshold || top.has(j));
+  });
 
   return { arcs: simplified, shapes, threshold };
 }

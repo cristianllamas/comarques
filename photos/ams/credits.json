@@ -1,0 +1,119 @@
+{
+  "AR": {
+    "caption": "L’Obelisc · Buenos Aires",
+    "author": "Sebastianalmaraz",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:ObeliscoBA2015.jpg",
+    "file": "ObeliscoBA2015.jpg",
+    "portrait": false
+  },
+  "BO": {
+    "caption": "Salar d’Uyuni",
+    "author": "Luca Galuzzi (Lucag), edit by Trialsanderrors",
+    "license": "CC BY-SA 2.5",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.5",
+    "source": "https://commons.wikimedia.org/wiki/File:Piles_of_Salt_Salar_de_Uyuni_Bolivia_Luca_Galuzzi_2006_a.jpg",
+    "file": "Piles of Salt Salar de Uyuni Bolivia Luca Galuzzi 2006 a.jpg",
+    "portrait": false
+  },
+  "BR": {
+    "caption": "Crist Redemptor · Rio de Janeiro",
+    "author": "Arne Müseler",
+    "license": "CC BY-SA 3.0 de",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/de/deed.en",
+    "source": "https://commons.wikimedia.org/wiki/File:Christ_the_Redeemer_-_Cristo_Redentor.jpg",
+    "file": "Christ the Redeemer - Cristo Redentor.jpg",
+    "portrait": true
+  },
+  "CL": {
+    "caption": "Torres del Paine, a la Patagònia",
+    "author": "LBM1948",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Torres_del_Paine,_Laguna_Azul_09.jpg",
+    "file": "Torres del Paine, Laguna Azul 09.jpg",
+    "portrait": false
+  },
+  "EC": {
+    "caption": "Illes Galápagos",
+    "author": "Diego Delso",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Lobo_marino_(Zalophus_californianus_wollebaeki),_Punta_Pitt,_isla_de_San_Crist%C3%B3bal,_islas_Gal%C3%A1pagos,_Ecuador,_2015-07-24,_DD_11.JPG",
+    "file": "Lobo marino (Zalophus californianus wollebaeki), Punta Pitt, isla de San Cristóbal, islas Galápagos, Ecuador, 2015-07-24, DD 11.JPG",
+    "portrait": false
+  },
+  "GF": {
+    "caption": "Centre Espacial · Kourou",
+    "author": "elisabetta_monaco from Munich, Germany",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Ariane_5ECA_on_its_launch_platform_on_its_way_to_lauch_pad_ELA-3.jpg",
+    "file": "Ariane 5ECA on its launch platform on its way to lauch pad ELA-3.jpg",
+    "portrait": false
+  },
+  "GY": {
+    "caption": "Cascades de Kaieteur",
+    "author": "Sorenriise at English Wikipedia",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:GuyanaKaieteurFalls2004.jpg",
+    "file": "GuyanaKaieteurFalls2004.jpg",
+    "portrait": true
+  },
+  "PY": {
+    "caption": "Presa d’Itaipú",
+    "author": "Jonas de Carvalho",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Itaipu_geral.jpg",
+    "file": "Itaipu geral.jpg",
+    "portrait": false
+  },
+  "PE": {
+    "caption": "Machu Picchu",
+    "author": "Draceane",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Machu_Picchu,_2023_(012).jpg",
+    "file": "Machu Picchu, 2023 (012).jpg",
+    "portrait": false
+  },
+  "SR": {
+    "caption": "Catedral de Sant Pere i Sant Pau · Paramaribo",
+    "author": "Davidsoe (shifted by Rabanus Flavus)",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Saints_Peter_and_Paul_Cathedral_Paramaribo.jpg",
+    "file": "Saints Peter and Paul Cathedral Paramaribo.jpg",
+    "portrait": true
+  },
+  "UY": {
+    "caption": "Palau Salvo · Montevideo",
+    "author": "Coolcaesar",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Palaciosalvouruguay.jpg",
+    "file": "Palaciosalvouruguay.jpg",
+    "portrait": true
+  },
+  "VE": {
+    "caption": "Salto Ángel",
+    "author": "Paulo Capiotti",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:SaltoAngel4.jpg",
+    "file": "SaltoAngel4.jpg",
+    "portrait": true
+  },
+  "CO": {
+    "caption": "Cartagena d’Índies",
+    "author": "Bernard Gagnon",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:View_of_Cartagena_from_Convento_de_Santa_Cruz_de_la_Popa_01.jpg",
+    "file": "View of Cartagena from Convento de Santa Cruz de la Popa 01.jpg",
+    "portrait": false
+  }
+}

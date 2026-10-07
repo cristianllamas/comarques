@@ -1,0 +1,488 @@
+{
+  "DZ": {
+    "caption": "Monument dels Màrtirs · Alger",
+    "author": "Boumediene15",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Martyrs_Memorial._Algiers,_Algeria.jpg",
+    "file": "Martyrs Memorial. Algiers, Algeria.jpg",
+    "portrait": false
+  },
+  "AO": {
+    "caption": "Fortalesa de São Miguel · Luanda",
+    "author": "Erik Cleves Kristensen",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Luanda-SMiguelFort2.jpg",
+    "file": "Luanda-SMiguelFort2.jpg",
+    "portrait": false
+  },
+  "BJ": {
+    "caption": "Poble lacustre de Ganvié, vora Cotonou",
+    "author": "Manu25 at French Wikipedia",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Ganvie2.jpg",
+    "file": "Ganvie2.jpg",
+    "portrait": false
+  },
+  "BW": {
+    "caption": "Delta de l’Okavango",
+    "author": "Teo Gómez",
+    "license": "Public domain",
+    "licenseUrl": null,
+    "source": "https://commons.wikimedia.org/wiki/File:Okavango11.jpg",
+    "file": "Okavango11.jpg",
+    "portrait": false
+  },
+  "BF": {
+    "caption": "Gran Mesquita · Bobo-Dioulasso",
+    "author": "qiv",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Moschee_von_Bobo-Dioulasso.jpg",
+    "file": "Moschee von Bobo-Dioulasso.jpg",
+    "portrait": false
+  },
+  "BI": {
+    "caption": "Llac Tanganyika",
+    "author": "Orrling",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Lake_Tanganyika.jpg",
+    "file": "Lake Tanganyika.jpg",
+    "portrait": false
+  },
+  "CV": {
+    "caption": "Volcà del Fogo · illa de Fogo",
+    "author": "Cayambe",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Cape_Verde_Pico_do_Fogo_b.jpg",
+    "file": "Cape Verde Pico do Fogo b.jpg",
+    "portrait": false
+  },
+  "CM": {
+    "caption": "Mont Camerun",
+    "author": "Eric Joel MAMA NKE",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Le_Char_des_Dieux_-_Fako_Mountain_-_Mount_Cameroon_National_Park_-_R%C3%A9gion_du_Sud-ouest.jpg",
+    "file": "Le Char des Dieux - Fako Mountain - Mount Cameroon National Park - Région du Sud-ouest.jpg",
+    "portrait": false
+  },
+  "TD": {
+    "caption": "Altiplà de l’Ennedi",
+    "author": "Desertman",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:24_Kamele_ziehen_zur_Wasserstelle_im_Ennedi-Gebirge_im_Tschad.jpg",
+    "file": "24 Kamele ziehen zur Wasserstelle im Ennedi-Gebirge im Tschad.jpg",
+    "portrait": false
+  },
+  "KM": {
+    "caption": "Volcà Karthala · Gran Comora",
+    "author": "alKomor.com",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Karthala_volcano-Comoros.jpg",
+    "file": "Karthala volcano-Comoros.jpg",
+    "portrait": false
+  },
+  "CG": {
+    "caption": "Basílica de Santa Anna · Brazzaville",
+    "author": "NGOULOU BATALA Ryddhel",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:WPWPCG_08.jpg",
+    "file": "WPWPCG 08.jpg",
+    "portrait": false
+  },
+  "CD": {
+    "caption": "Volcà Nyiragongo, vora Goma",
+    "author": "Cai Tjeenk Willink (Caitjeenk)",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Lava_Lake_Nyiragongo_2.jpg",
+    "file": "Lava Lake Nyiragongo 2.jpg",
+    "portrait": false
+  },
+  "CI": {
+    "caption": "Basílica de Nostra Senyora de la Pau · Yamoussoukro",
+    "author": "Didierwiki",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "source": "https://commons.wikimedia.org/wiki/File:Basilique_notre_Dame_de_la_Paix_de_Yamoussoukro_16.jpg",
+    "file": "Basilique notre Dame de la Paix de Yamoussoukro 16.jpg",
+    "portrait": false
+  },
+  "EG": {
+    "caption": "Piràmides de Gizeh, vora el Caire",
+    "author": "KennyOMG",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Pyramids_of_the_Giza_Necropolis.jpg",
+    "file": "Pyramids of the Giza Necropolis.jpg",
+    "portrait": false
+  },
+  "ER": {
+    "caption": "Edifici Fiat Tagliero · Asmara",
+    "author": "sailko",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Fiat_tagliero,_08.JPG",
+    "file": "Fiat tagliero, 08.JPG",
+    "portrait": false
+  },
+  "SZ": {
+    "caption": "Roca de Sibebe, vora Mbabane",
+    "author": "theswazigirl",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Granite_monolith.jpg",
+    "file": "Granite monolith.jpg",
+    "portrait": false
+  },
+  "ET": {
+    "caption": "Església de Sant Jordi · Lalibela",
+    "author": "Sailko",
+    "license": "CC BY 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Lalibela,_san_giorgio,_esterno_24.jpg",
+    "file": "Lalibela, san giorgio, esterno 24.jpg",
+    "portrait": false
+  },
+  "GA": {
+    "caption": "Parc Nacional de la Lopé",
+    "author": "FX",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Lop%C3%A9_National_Park_river_crop.jpg",
+    "file": "Lopé National Park river crop.jpg",
+    "portrait": false
+  },
+  "GM": {
+    "caption": "Arc 22 · Banjul",
+    "author": "Atamari",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Gambia_banjul_arch22.JPG",
+    "file": "Gambia banjul arch22.JPG",
+    "portrait": false
+  },
+  "GN": {
+    "caption": "Gran Mesquita · Conakry",
+    "author": "Ourysow92",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Mosqu%C3%A9e_faysale.jpg",
+    "file": "Mosquée faysale.jpg",
+    "portrait": false
+  },
+  "GW": {
+    "caption": "Arxipèlag dels Bijagós",
+    "author": "European Space Agency / CNES",
+    "license": "Attribution",
+    "licenseUrl": null,
+    "source": "https://commons.wikimedia.org/wiki/File:L%27Archipel_des_Bijagos_vu_par_Sentinel_2.jpg",
+    "file": "L'Archipel des Bijagos vu par Sentinel 2.jpg",
+    "portrait": false
+  },
+  "KE": {
+    "caption": "Reserva de Masai Mara",
+    "author": "Morris Pügner",
+    "license": "Public domain",
+    "licenseUrl": null,
+    "source": "https://commons.wikimedia.org/wiki/File:Mara_River_Massai_Mara.jpg",
+    "file": "Mara River Massai Mara.jpg",
+    "portrait": false
+  },
+  "LS": {
+    "caption": "Cascades de Maletsunyane",
+    "author": "BagelBelt",
+    "license": "Public domain",
+    "licenseUrl": null,
+    "source": "https://commons.wikimedia.org/wiki/File:Maletsunyanefalls.JPG",
+    "file": "Maletsunyanefalls.JPG",
+    "portrait": false
+  },
+  "LR": {
+    "caption": "Antic hotel Ducor · Monròvia",
+    "author": "Mark Fischer",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:The_swimming_pool_area_of_the_former_Ducor_Palace_Hotel_in_Monrovia,_Liberia.jpg",
+    "file": "The swimming pool area of the former Ducor Palace Hotel in Monrovia, Liberia.jpg",
+    "portrait": false
+  },
+  "LY": {
+    "caption": "Ruïnes romanes de Leptis Magna",
+    "author": "joepyrek from Richmond, Va, USA",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Leptis_Magna_(29)_(8288918733).jpg",
+    "file": "Leptis Magna (29) (8288918733).jpg",
+    "portrait": false
+  },
+  "MG": {
+    "caption": "Avinguda dels Baobabs",
+    "author": "Hanay",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:The_Avenue_of_the_Baobabs_in_Madagascar_near_the_city_of_Morondava_at_sunrise_(34).jpg",
+    "file": "The Avenue of the Baobabs in Madagascar near the city of Morondava at sunrise (34).jpg",
+    "portrait": false
+  },
+  "MW": {
+    "caption": "Llac Malawi",
+    "author": "Hans Hillewaert",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Otter_Point,_Cape_Maclear_(Malawi).jpg",
+    "file": "Otter Point, Cape Maclear (Malawi).jpg",
+    "portrait": false
+  },
+  "ML": {
+    "caption": "Gran Mesquita · Djenné",
+    "author": "Andy Gilham",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:Great_Mosque_of_Djenn%C3%A9_1.jpg",
+    "file": "Great Mosque of Djenné 1.jpg",
+    "portrait": false
+  },
+  "MA": {
+    "caption": "Torre Hassan · Rabat",
+    "author": "Petar Milošević",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Hassan_Tower,_Rabat,_Marocco_(%D8%B5%D9%88%D9%85%D8%B9%D8%A9_%D8%AD%D8%B3%D8%A7%D9%86_).jpg",
+    "file": "Hassan Tower, Rabat, Marocco (صومعة حسان ).jpg",
+    "portrait": true
+  },
+  "MU": {
+    "caption": "Le Morne Brabant",
+    "author": "\"dronepicr\"",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Le_Morne_Peninsula_in_Mauritius_(53697779236).jpg",
+    "file": "Le Morne Peninsula in Mauritius (53697779236).jpg",
+    "portrait": false
+  },
+  "MR": {
+    "caption": "Mesquita de Chinguetti",
+    "author": "Mohamed Natti",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:%D9%85%D8%B3%D8%AC%D8%AF_%D8%B4%D9%86%D9%82%D9%8A%D8%B7_%D8%A7%D9%84%D8%AA%D8%A7%D8%B1%D9%8A%D8%AE%D9%8A.jpg",
+    "file": "مسجد شنقيط التاريخي.jpg",
+    "portrait": false
+  },
+  "MZ": {
+    "caption": "Illa de Moçambic",
+    "author": "Rosino",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Beach_cleaning.jpg",
+    "file": "Beach cleaning.jpg",
+    "portrait": false
+  },
+  "NA": {
+    "caption": "Dunes de Sossusvlei, al desert del Namib",
+    "author": "Anagoria",
+    "license": "CC BY 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:2011-02-09_066.JPG",
+    "file": "2011-02-09 066.JPG",
+    "portrait": false
+  },
+  "NG": {
+    "caption": "Roca Zuma, vora Abuja",
+    "author": "Ekenejt",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Zuma_rock,_Niger._Human_face_like_rock_1.jpg",
+    "file": "Zuma rock, Niger. Human face like rock 1.jpg",
+    "portrait": false
+  },
+  "RW": {
+    "caption": "Parc Nacional dels Volcans",
+    "author": "Dave Proffer",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Parc_National_Des_Volcans_-_Flickr_-_Dave_Proffer_(4).jpg",
+    "file": "Parc National Des Volcans - Flickr - Dave Proffer (4).jpg",
+    "portrait": false
+  },
+  "ST": {
+    "caption": "Pico Cão Grande · illa de São Tomé",
+    "author": "Philippe Bourachot",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Pico_C%C3%A3o_Grande.jpg",
+    "file": "Pico Cão Grande.jpg",
+    "portrait": false
+  },
+  "SN": {
+    "caption": "Monument de la Renaixença Africana · Dakar",
+    "author": "Tafsir207",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Monument_renaissance.jpg",
+    "file": "Monument renaissance.jpg",
+    "portrait": false
+  },
+  "SO": {
+    "caption": "Pintures rupestres de Laas Geel",
+    "author": "Abdullah Geelah",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:Laas_Geel.jpg",
+    "file": "Laas Geel.jpg",
+    "portrait": false
+  },
+  "ZA": {
+    "caption": "Muntanya de la Taula · Ciutat del Cap",
+    "author": "Danie van der Merwe from Cape Town, South Africa",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Table_Mountain_DanieVDM.jpg",
+    "file": "Table Mountain DanieVDM.jpg",
+    "portrait": false
+  },
+  "SS": {
+    "caption": "Juba",
+    "author": "Rigan123",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Juba_City.jpg",
+    "file": "Juba City.jpg",
+    "portrait": false
+  },
+  "SD": {
+    "caption": "Piràmides de Meroe",
+    "author": "Photographer: B N Chagny",
+    "license": "CC BY-SA 1.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/1.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Sudan_Meroe_Pyramids_2001.JPG",
+    "file": "Sudan Meroe Pyramids 2001.JPG",
+    "portrait": false
+  },
+  "TZ": {
+    "caption": "Kilimanjaro",
+    "author": "Muhammad Mahdi Karim",
+    "license": "GFDL 1.2",
+    "licenseUrl": "http://www.gnu.org/licenses/old-licenses/fdl-1.2.html",
+    "source": "https://commons.wikimedia.org/wiki/File:Mount_Kilimanjaro_Dec_2009_edit1.jpg",
+    "file": "Mount Kilimanjaro Dec 2009 edit1.jpg",
+    "portrait": false
+  },
+  "TG": {
+    "caption": "Koutammakou, terra dels batammariba",
+    "author": "Erik Kristensen",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Togo_Taberma_house_02.jpg",
+    "file": "Togo Taberma house 02.jpg",
+    "portrait": false
+  },
+  "TN": {
+    "caption": "Sidi Bou Said, vora Tunis",
+    "author": "Habib M'henni",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Sidi_Bou_Said,_Tunisia,_19_March_2018_DSC_8004.jpg",
+    "file": "Sidi Bou Said, Tunisia, 19 March 2018 DSC 8004.jpg",
+    "portrait": false
+  },
+  "UG": {
+    "caption": "Cascades Murchison",
+    "author": "Oliver Sedlacek",
+    "license": "Public domain",
+    "licenseUrl": null,
+    "source": "https://commons.wikimedia.org/wiki/File:Murchison_Falls_from_above.jpg",
+    "file": "Murchison Falls from above.jpg",
+    "portrait": false
+  },
+  "ZM": {
+    "caption": "Cascades Victòria",
+    "author": "Diego Delso",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Cataratas_Victoria,_Zambia-Zimbabue,_2018-07-27,_DD_05.jpg",
+    "file": "Cataratas Victoria, Zambia-Zimbabue, 2018-07-27, DD 05.jpg",
+    "portrait": false
+  },
+  "ZW": {
+    "caption": "Ruïnes del Gran Zimbàbue",
+    "author": "Andrew Moore from Johannesburg, South Africa",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Conical_Tower_-_Great_Enclosure_III_(33736918448).jpg",
+    "file": "Conical Tower - Great Enclosure III (33736918448).jpg",
+    "portrait": false
+  },
+  "GQ": {
+    "caption": "Malabo, a l’illa de Bioko",
+    "author": "Ipisking at English Wikipedia",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:Malabo_a_13-oct-01.jpg",
+    "file": "Malabo a 13-oct-01.jpg",
+    "portrait": false
+  },
+  "NE": {
+    "caption": "Gran Mesquita · Agadez",
+    "author": "Dan Lundberg",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:1997_277-9A_Agadez_mosque_cropped.jpg",
+    "file": "1997 277-9A Agadez mosque cropped.jpg",
+    "portrait": false
+  },
+  "CF": {
+    "caption": "Cascades de Boali",
+    "author": "Philippe JIMENEZ",
+    "license": "FAL",
+    "licenseUrl": "http://artlibre.org/licence/lal/en",
+    "source": "https://commons.wikimedia.org/wiki/File:Republique_Centrafricaine_-_Boali_-_Chutes_de_Boali.jpg",
+    "file": "Republique Centrafricaine - Boali - Chutes de Boali.jpg",
+    "portrait": true
+  },
+  "SC": {
+    "caption": "Anse Source d’Argent · illa de La Digue",
+    "author": "A.Savin",
+    "license": "FAL",
+    "licenseUrl": "http://artlibre.org/licence/lal/en",
+    "source": "https://commons.wikimedia.org/wiki/File:La_Digue_asv2024-10_img15_Union_Estate.jpg",
+    "file": "La Digue asv2024-10 img15 Union Estate.jpg",
+    "portrait": false
+  },
+  "DJ": {
+    "caption": "Llac Assal, el punt més baix d’Àfrica",
+    "author": "Mheidegger",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Assal_Lake,_2024.jpg",
+    "file": "Assal Lake, 2024.jpg",
+    "portrait": false
+  },
+  "GH": {
+    "caption": "Mausoleu de Kwame Nkrumah · Accra",
+    "author": "Edward Kamau",
+    "license": "CC BY 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Kwame_nkrumah_grave_accra_ghana.jpg",
+    "file": "Kwame nkrumah grave accra ghana.jpg",
+    "portrait": false
+  },
+  "SL": {
+    "caption": "Freetown",
+    "author": "David Hond",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Freetown-aerialview.jpg",
+    "file": "Freetown-aerialview.jpg",
+    "portrait": false
+  }
+}

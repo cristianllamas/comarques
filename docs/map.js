@@ -27,7 +27,9 @@ export class Mapa {
 
     this.rings = new Map();
 
-    this.svg = el('svg', { viewBox: topic.viewBox, class: 'mapa', role: 'img' });
+    // On the oceans and seas maps the places are water: `aigua` recolours them, and the
+    // land is a cover drawn over them (and over their highlights).
+    this.svg = el('svg', { viewBox: topic.viewBox, class: topic.water ? 'mapa aigua' : 'mapa', role: 'img' });
     this.gContext = el('g', { 'aria-hidden': 'true' });
     for (const d of topic.context || []) this.gContext.append(el('path', { d, class: 'contexte' }));
     // An inset box hides the context underneath it, so the islands sit on open sea.
@@ -46,18 +48,21 @@ export class Mapa {
     this.gRings = el('g');
     for (const c of topic.places) {
       if (!c.mark) continue;
-      const r = el('circle', { cx: c.mark[0], cy: c.mark[1], r: 11, class: 'anella' });
+      // Smaller where rings would overlap (the Antilles), so a tap lands on the right one.
+      const r = el('circle', { cx: c.mark[0], cy: c.mark[1], r: c.markR || 11, class: 'anella' });
       r.dataset.code = c.code;
       this.rings.set(c.code, r);
       this.gRings.append(r);
     }
     this.gBorders = el('g', { 'aria-hidden': 'true' });
-    for (const d of topic.borders || []) this.gBorders.append(el('path', { d, class: 'provincia' }));
+    for (const d of topic.borders || []) this.gBorders.append(el('path', { d, class: topic.water ? 'limit' : 'provincia' }));
+    this.gCover = el('g', { 'aria-hidden': 'true' });
+    for (const d of topic.cover || []) this.gCover.append(el('path', { d, class: 'terra' }));
 
     // drawn last so a highlighted place is never hidden under a neighbour's border
     this.gTop = el('g', { 'aria-hidden': 'true' });
     this.gLabels = el('g', { class: 'etiquetes', 'aria-hidden': 'true' });
-    this.svg.append(this.gContext, this.gZones, this.gBorders, this.gTop, this.gRings, this.gLabels);
+    this.svg.append(this.gContext, this.gZones, this.gBorders, this.gTop, this.gCover, this.gRings, this.gLabels);
     this.labels = false;
     this.labelCapitals = true;
 
@@ -98,7 +103,9 @@ export class Mapa {
   focus(code, pad = 2.2) {
     const p = this.paths.get(code);
     if (!p) return;
-    const b = p.getBBox();
+    // A place split by the map's edge (the Pacific) brings the box around its larger piece.
+    const f = this.topic.byCode.get(code)?.focus;
+    const b = f ? { x: f[0], y: f[1], width: f[2], height: f[3] } : p.getBBox();
     // getBBox returns zeros while the SVG is detached from the document; zooming to that
     // leaves an empty viewBox and a blank map, so refuse rather than render nothing.
     if (!b.width || !b.height) return;

@@ -167,7 +167,10 @@ let t = await text();
 check(/Estudia geografia/i.test(t), 'title renders');
 check(/Què vols estudiar/.test(t), 'a new device starts on the pack picker');
 check(await evaluate(`[...document.querySelectorAll('.tema-titol')].map(x=>x.textContent).join(' | ')`)
-  === 'Comarques i capitals | Comarques | Comunitats autònomes | Unió Europea', 'packs are listed in the agreed order');
+  === 'Comarques i capitals | Comarques | Comunitats autònomes | Unió Europea | Àfrica | '
+    + 'Amèrica del Nord i Central | Amèrica del Sud | Àsia | Oceans | Mars i golfs', 'packs are listed in the agreed order');
+check(await evaluate(`[...document.querySelectorAll('.grup')].map(x=>x.textContent).join(' | ')`)
+  === 'Catalunya | Espanya | Europa | Món', 'packs are grouped under headings');
 await shot('0-packs');
 check(await clickPack('Comarques i capitals') === 'ok', 'choosing a pack');
 await sleep(600);
@@ -207,7 +210,7 @@ if (await clickText('Comença') !== 'ok') await clickText('Continua');
 await sleep(300);
 t = await text();
 check(/REPÀS|Repàs/i.test(t), 'study phase starts');
-check(/Capital:/.test(t), 'study card shows the capital');
+check(/Capitals?:/.test(t), 'study card shows the capital');
 check(/Província:/.test(t), 'study card shows the província');
 await shot('3-study');
 const cards = await walkStudy();
@@ -318,7 +321,7 @@ await shot('10-studymap-zoom');
 const itemsBefore = (await packItems('comarques-capitals')).length;
 await tapFirstZone();
 await sleep(300);
-check(/Capital:/.test(await text()), 'tapping a comarca shows its card');
+check(/Capitals?:/.test(await text()), 'tapping a comarca shows its card');
 const itemsAfter = (await packItems('comarques-capitals')).length;
 check(itemsAfter === itemsBefore, 'browsing the study map does not touch the scheduler');
 await shot('11-studymap-card');
@@ -344,7 +347,7 @@ check(/42 preguntes/.test(t), 'comarques-only pack: 42 questions, one per comarc
 const otherBefore = (await packItems('comarques-capitals')).length;
 await clickText('Comença');
 await sleep(300);
-check(!/Capital:/.test(await text()), 'study card does not mention the capital');
+check(!/Capitals?:/.test(await text()), 'study card does not mention the capital');
 await shot('12-nocap-study');
 await walkStudy();
 const prompts = await finishSession();
@@ -421,9 +424,13 @@ const tapCode = (code) => evaluate(`(()=>{const svg=document.querySelector('svg.
   if (ring) { const r=ring.getBoundingClientRect(); x=r.left+r.width/2; y=r.top+r.height/2; }
   else {
     const p=svg.querySelector('path.zona[data-code="${code}"]'), b=p.getBBox(), m=p.getScreenCTM();
+    // Inside the shape *and* on top: on the water maps much of a sea's shape is under the land.
     outer: for (let i=1;i<20;i++) for (let j=1;j<20;j++) {
       const pt=new DOMPoint(b.x+b.width*i/20, b.y+b.height*j/20);
-      if (p.isPointInFill(pt)) { const s=pt.matrixTransform(m); x=s.x; y=s.y; break outer; }
+      if (!p.isPointInFill(pt)) continue;
+      const s=pt.matrixTransform(m);
+      if (document.elementFromPoint(s.x,s.y)?.closest('.zona,.anella')?.dataset.code!=='${code}') continue;
+      x=s.x; y=s.y; break outer;
     }
   }
   const o={bubbles:true,clientX:x,clientY:y,pointerId:1,pointerType:'touch',isPrimary:true};
@@ -444,7 +451,8 @@ check(await evaluate(`[...document.querySelectorAll('svg.mapa circle.anella')].m
 await shot('20-esp-home');
 await clickText('Comença');
 await sleep(400);
-check(/Capital:|Ciutat autònoma/.test(await text()), 'Comunitats study card shows the capital (or says ciutat autònoma)');
+// "Capitals:" when the first card happens to have two (Canàries): the order is shuffled.
+check(/Capitals?:|Ciutat autònoma/.test(await text()), 'Comunitats study card shows the capital (or says ciutat autònoma)');
 await shot('21-esp-study');
 await walkStudy();
 const espPrompts = await finishSession();
@@ -478,7 +486,143 @@ await evaluate(`document.querySelector('.fitxa').scrollIntoView()`);
 await sleep(200);
 await shot('24-esp-leon');
 
-console.log('\n12. progress from the comarques-only app is carried over');
+// ---------------------------------------------------------------- the world packs
+
+/** Open a pack from the picker; returns the home screen text. */
+async function openPackNamed(title) {
+  await clickText('Inici');
+  await sleep(250);
+  await clickText('☰ Packs de contingut');
+  await sleep(250);
+  check(await clickPack(title) === 'ok', `the ${title} pack is listed`);
+  await sleep(900);
+  return text();
+}
+
+/** A full session, then the study map with no clipped labels. Returns the prompts seen. */
+async function sessionAndMap(title) {
+  await clickText('Comença');
+  await sleep(400);
+  const cards = await walkStudy();
+  check(cards.length > 0 && new Set(cards).size === cards.length, `${title}: Fase 1 shows ${cards.length} different places`);
+  const prompts = await finishSession();
+  check(/Sessió acabada/.test(await text()), `${title}: the session reaches the summary`);
+  check(prompts.length > 0 && prompts.every((p) => !/comarca/i.test(p)), `${title}: ${prompts.length} questions, none about a comarca`);
+  await clickText('Inici');
+  await sleep(250);
+  await clickText('Mira el mapa');
+  await sleep(700);
+  const clippedHere = await clippedLabels();
+  check(clippedHere.length === 0, `${title}: no label is clipped${clippedHere.length ? ' — ' + clippedHere.join(', ') : ''}`);
+  return prompts;
+}
+
+// Tap rings must never overlap, or a tap meant for one picks its neighbour.
+const ringsOverlap = () => evaluate(`(()=>{
+  const cs=[...document.querySelectorAll('svg.mapa circle.anella')].map(c=>({c:c.dataset.code,
+    x:+c.getAttribute('cx'),y:+c.getAttribute('cy'),r:+c.getAttribute('r')}));
+  const out=[];
+  for(let i=0;i<cs.length;i++)for(let j=i+1;j<cs.length;j++){const a=cs[i],b=cs[j];
+    if(Math.hypot(a.x-b.x,a.y-b.y)<a.r+b.r-0.01) out.push(a.c+'/'+b.c);}
+  return out;})()`);
+
+console.log('\n12. Àfrica');
+t = await openPackNamed('Àfrica');
+check(/108 preguntes/.test(t), 'Àfrica: 55 places + 53 capitals (not Djibouti, São Tomé) = 108 questions');
+check(await evaluate('document.querySelectorAll("svg.mapa path.zona").length') === 55, '55 shapes: 54 states and the Sàhara Occidental');
+check((await ringsOverlap()).length === 0, `no two tap rings overlap ${await ringsOverlap()}`);
+await shot('25-afr-home');
+await sessionAndMap('Àfrica');
+await tapCode('ZA');
+await sleep(300);
+t = await text();
+check(/Capitals: Pretòria, Ciutat del Cap i Bloemfontein/.test(t) && /tres capitals/.test(t),
+  'Sud-àfrica: three capitals, listed "A, B i C", and the card explains them');
+await tapCode('EH');
+await sleep(300);
+check(/Territori disputat/.test(await text()), 'Sàhara Occidental: the card says it is disputed');
+await shot('26-afr-studymap');
+
+console.log('\n13. Amèrica del Nord i Central');
+t = await openPackNamed('Amèrica del Nord i Central');
+check(/47 preguntes/.test(t), 'Amèrica del Nord: 25 places + 22 capitals (not Mèxic, Guatemala, Panamà) = 47 questions');
+check((await ringsOverlap()).length === 0, `the Antilles' tap rings do not overlap ${await ringsOverlap()}`);
+await sessionAndMap('Amèrica del Nord');
+await tapCode('PR');
+await sleep(300);
+check(/No és un país independent/.test(await text()), 'Puerto Rico: the card says it is not an independent country');
+await tapCode('LC');
+await sleep(300);
+check(/Saint Lucia/.test(await text()), 'Saint Lucia: its small ring can be tapped');
+await shot('27-amn-studymap');
+
+console.log('\n14. Amèrica del Sud');
+t = await openPackNamed('Amèrica del Sud');
+check(/26 preguntes/.test(t), 'Amèrica del Sud: 13 places x 2 = 26 questions');
+await sessionAndMap('Amèrica del Sud');
+await tapCode('BO');
+await sleep(300);
+check(/Capitals: Sucre i La Paz/.test(await text()), 'Bolívia: both capitals on the card');
+await shot('28-ams-studymap');
+
+console.log('\n15. Àsia');
+t = await openPackNamed('Àsia');
+check(/100 preguntes/.test(t), 'Àsia: 51 places + 49 capitals (not Kuwait, Singapur) = 100 questions');
+check((await ringsOverlap()).length === 0, `no two tap rings overlap ${await ringsOverlap()}`);
+await sessionAndMap('Àsia');
+await tapCode('TW');
+await sleep(300);
+check(/Taiwan/.test(await text()) && /Taipei/.test(await text()), 'Taiwan is its own place, cut out of China');
+await shot('29-asi-studymap');
+
+console.log('\n16. Oceans');
+t = await openPackNamed('Oceans');
+check(/5 preguntes/.test(t), 'Oceans: 5 questions');
+check(await evaluate('document.querySelector("svg.mapa").classList.contains("aigua")'), 'the oceans map is drawn as water');
+check(await evaluate('!!document.querySelector("svg.mapa path.terra")'), 'the land is drawn over the water');
+await shot('30-oce-home');
+await clickText('Comença');
+await sleep(400);
+const oceCards = await walkStudy();
+check(oceCards.length === 1, `a 5-place pack studies 1 card and asks the rest (studied ${oceCards.length})`);
+await finishSession();
+// Counted from the score, not the prompts: "Quin oceà és el destacat?" reads the same for every ocean.
+const oceAsked = Number(String(await evaluate(`document.querySelector('.marcador')?.textContent`)).split('/')[1]);
+check(oceAsked >= 4, `…and asks the other 4 (${oceAsked} questions, with the misses requeued)`);
+await clickText('Inici');
+await sleep(250);
+await clickText('Mira el mapa');
+await sleep(700);
+check(/Marine Regions/.test(await text()), 'the study map credits the IHO data');
+// A tap on land must not pick the ocean under it: the Sahara is not the Atlantic.
+await evaluate(`(()=>{const svg=document.querySelector('svg.mapa.triable');
+  const land=svg.querySelector('path.terra'); const m=land.getScreenCTM();
+  const pt=new DOMPoint(530, 180).matrixTransform(m);
+  const o={bubbles:true,clientX:pt.x,clientY:pt.y,pointerId:1,pointerType:'touch',isPrimary:true};
+  svg.dispatchEvent(new PointerEvent('pointerdown',o)); svg.dispatchEvent(new PointerEvent('pointerup',o));})()`);
+await sleep(300);
+check(/Toca un oceà/.test(await text()), 'tapping land (the Sahara) picks no ocean');
+await tapCode('PAC');
+await sleep(400);
+t = await text();
+check(/Oceà Pacífic/.test(t), 'tapping the Pacific shows its card, name capitalised');
+await shot('31-oce-studymap');
+
+console.log('\n17. Mars i golfs');
+t = await openPackNamed('Mars i golfs');
+check(/47 preguntes/.test(t), 'Mars: 24 places + 23 oceans (not the Caspi) = 47 questions');
+const marPrompts = await sessionAndMap('Mars i golfs');
+check(marPrompts.some((p) => /A quin oceà pertany/.test(p)), 'some questions ask which ocean a sea belongs to');
+await tapCode('CAS');
+await sleep(300);
+t = await text();
+check(/Mar Caspi/.test(t) && /No pertany a cap oceà/.test(t), 'the Caspi: card says it belongs to no ocean');
+await tapCode('MED');
+await sleep(300);
+check(/Oceà: Atlàntic/.test(await text()), 'the Mediterrani belongs to the Atlàntic');
+await shot('32-mar-studymap');
+
+console.log('\n18. progress from the comarques-only app is carried over');
 await evaluate(`(()=>{localStorage.clear();
   localStorage.setItem('comarques.v1', JSON.stringify({
     items:{'01:lloc':{box:2,due:0,seen:3,wrong:0,streak:2,last:0}},

@@ -73,15 +73,22 @@ docs/                     the published site
     cat-geo.js   cat-hints.js   cat-photos.js     comarques
     esp-geo.js   esp-hints.js   esp-photos.js     comunitats autònomes
     ue-geo.js    ue-hints.js    ue-photos.js      Unió Europea
+    afr-… amn-… ams-… asi-…  (geo, hints, photos) Àfrica, Amèrica del Nord i Central,
+                                                  Amèrica del Sud, Àsia
+    oce-geo.js   oce-hints.js                     the five oceans
+    mar-geo.js   mar-hints.js                     seas and gulfs (draws oce-geo.js underneath)
+    terra-geo.js                                  the land, drawn over the oceans and seas
                  (*-geo.js and *-photos.js GENERATED — do not edit; *-hints.js hand-written)
-  img/cat/ img/esp/ img/ue/   photos resized to 800 px
+  img/<topic>/                photos resized to 800 px
 
 build/                    run by hand
   topology.mjs            shared-arc topology + Visvalingam simplification
-  geo-lib.mjs             geometry helpers shared by the three geo builds
+  geo-lib.mjs             geometry helpers shared by the geo builds; projections
   fetch-geo.mjs           ICGC comarques + províncies     → data/cat-geo.js
   fetch-geo-esp.mjs       GISCO NUTS-2 Spain + context    → data/esp-geo.js
   fetch-geo-ue.mjs        GISCO countries                 → data/ue-geo.js
+  fetch-geo-mon.mjs       GISCO world countries           → data/{afr,amn,ams,asi}-geo.js
+  fetch-geo-mar.mjs       IHO sea areas + GISCO land      → data/{oce,mar,terra}-geo.js
   fetch-hints.mjs         Wikipedia intros → data/hints.raw.md (raw material only)
   fetch-photos.mjs        landmark photos + credits from Commons → photos/<topic>/
   scan-photos.mjs         photos/<topic>/ → img/<topic>/ + data/<topic>-photos.js
@@ -99,15 +106,17 @@ data/                     downloaded raw sources (*.raw.geojson, gitignored)
 
 | Term | Meaning | Example |
 |---|---|---|
-| **topic** | a map and its places | `cat`, `esp`, `ue` |
+| **topic** | a map and its places | `cat`, `esp`, `ue`, `afr`, `amn`, `ams`, `asi`, `oce`, `mar` |
 | **place** | one tappable region | Bages, Navarra, Malta |
-| **facet** | one thing to know about a place | `lloc` (where it is), `capital` |
+| **facet** | one thing to know about a place | `lloc` (where it is), `capital`, `ocea` (a sea's ocean) |
 | **item** | a place × facet, tracked by the scheduler | `"07:capital"` |
 | **pack** | a topic + the facets it asks | `comarques` = `cat` × `['lloc']` |
 
 `code` is the key everything joins on: the official ICGC comarca code (`"01"`–`"43"`),
-the NUTS-2 code for comunitats (`"ES51"`), the GISCO country code for the EU (`"FR"`;
-note Greece is `"EL"`). Items are keyed `"<code>:<facet>"`.
+the NUTS-2 code for comunitats (`"ES51"`), the GISCO country code for the EU and the
+continents (`"FR"`; note Greece is `"EL"`; `"TW"` and `"GF"` are cut out of China and France
+by the build), and a three-letter code for oceans and seas (`"PAC"`, `"MED"`). Items are
+keyed `"<code>:<facet>"`.
 
 ### The normalised topic
 
@@ -127,11 +136,16 @@ and `app.js` never know which map they are drawing:
     photo, credit,            // image path; { caption, author, license, source, retall? }
     extra,                    // a line of context for the card (província, "Ciutat autònoma")
     label, area, d, mark,     // label anchor, area (label priority), SVG path, tap-ring centre
+    markR,                    // smaller tap ring where rings would overlap (the Antilles)
+    focus,                    // [x, y, w, h] to zoom to, for a place split by the map edge
+    ocea,                     // seas: the ocean it belongs to ("Atlàntic"), or null (Caspi)
   }],
   byCode,                     // Map code → place
   context: [d],               // grey, untappable surroundings (neighbouring countries)
   borders: [d],               // thick lines over the places (províncies)
   insets: [{ x, y, w, h }],   // framed boxes for places drawn elsewhere (Canàries)
+  cover: [d],                 // water maps: the land, drawn over the places and highlights
+  water, credit,              // water maps: recolour as water; a data credit line
   words: {                    // the topic's phrasing — gender and noun differ per topic
     many, whichShape, capitalOfWhich, capitalsOfWhich,
     placeholder, tapToSee, tapHelp, wrongTap(nameWithArticle),
@@ -150,10 +164,15 @@ The hand-written hints files use Catalan field names (`preguntaCapital`, `nota`,
 | **cat** | `VIEWBOX`, `COMARQUES` (with name, capital, província from ICGC), `PROVINCIES`, `OSONA_MERGED` | `art`, `hook`, `accepta` |
 | **esp** | `VIEWBOX`, `REGIONS`, `CONTEXT`, `INSET` | `name`, `capital`, `art`, `hook`, `accepta`, `accNom`, `preguntaCapital`, `nota`, `etiqueta` |
 | **ue** | `VIEWBOX`, `COUNTRIES`, `CONTEXT` | `name`, `capital`, `art`, `hook`, `accepta`, `accNom`, `preguntaCapital` |
+| **afr amn ams asi** | `VIEWBOX`, `COUNTRIES` (with `markR`), `CONTEXT` | as `esp`; `nota` explains disputes and territories |
+| **oce** | `VIEWBOX`, `OCEANS` (with `focus`), `CONTEXT` (the Caspi), `BORDERS` | `name`, `art`, `hook`, `accNom` |
+| **mar** | `VIEWBOX`, `SEAS`, `BORDERS` (+ `terra-geo.js`: `LAND`) | `name`, `art`, `ocea`, `hook`, `accNom` |
 
-For the comarques, names and capitals come from the official geometry. For `esp` and
-`ue` the GISCO names are Spanish/English, so the hints file is the source of truth and the
-build refuses to run if it and the geometry disagree.
+For the comarques, names and capitals come from the official geometry. For every other
+topic the source names are Spanish/English, so the hints file is the source of truth and
+the build refuses to run if it and the geometry disagree. Sea and ocean names keep the
+generic noun lower case, as in running text (*el mar Negre*); `display()` capitalises it
+where it opens a line, and `topics.js` also accepts the bare name (*Negre*).
 
 Every `*-photos.js` exports `PHOTOS` (code → file name) and, for Commons photos,
 `CREDITS` (code → caption, author, licence, source URL, optional `retall`).
@@ -211,7 +230,9 @@ zoom — is deferred until the screen is in the document (see Traps).
    appends new items, e.g. Lluçanès switched on).
 2. `selectDue(state, pairs, 18, now)` picks 18 items, at most one per place.
 3. The first 6 become **Repàs** cards (`markStudied`: seen, but no box change); the next
-   12 become **Recorda** questions (`buildQuestion`, random kind within the facet).
+   12 become **Recorda** questions (`buildQuestion`, random kind within the facet). A pack
+   with fewer than 18 places gets fewer picks; then a third are cards (`studyCount`), so
+   the five oceans make 1 card and 4 questions rather than 5 cards and none.
 4. Each answer is `grade`d and saved immediately. A miss is requeued once at the end.
 5. Typed answers climb down: hint → first letter → four options. Reaching the answer
    only at the options is graded as a miss.
@@ -269,7 +290,16 @@ point-in-polygon, dissolve, clipping, and `processLayer` which runs the whole ch
 | Asserts | 43 comarques, capital + província each, per-província counts | 19 regions, 17 capitals, all in hints | 27 members (`EU_STAT`), all in hints |
 | Output | ≈225 KB | ≈155 KB | ≈150 KB |
 
-Raw downloads are cached in `data/*.raw.geojson` (gitignored); delete one to refetch.
+| | `fetch-geo-mon.mjs` (afr amn ams asi) | `fetch-geo-mar.mjs` (oce mar) |
+|---|---|---|
+| Source | GISCO countries 2024 1:10M, EPSG:4326 | Marine Regions IHO Sea Areas v3 (CC BY), Natural Earth (Caspi), GISCO (land) |
+| Projection | equal-area per continent: LAEA (afr, ams), Albers (amn, asi) | Equal Earth, centred on Greenwich |
+| Special | Taiwan, Guaiana Francesa cut out; disputed areas to their administrator; far-off parts dropped (Hawaii); antimeridian seam welded | T-junctions welded; land drawn over the water; borders as their own layer |
+| Asserts | the count per topic, every hint has geometry, label inside | 5 oceans, every sea, every IHO area in an ocean, each sea's `ocea` = the IHO's |
+| Output | 80–245 KB each | ≈95 + 45 + 195 KB |
+
+Raw downloads are cached in `data/*.raw.geojson` (gitignored); delete one to refetch. The
+IHO download is 250 MB and takes a minute or two.
 
 ### Photos
 
@@ -310,15 +340,19 @@ through 7 days at 3 sessions a day, for every pack, and fails unless every item 
 at least 3 times and no session shows a place twice. `HOURS=8,13,17,21` varies the
 sessions per day, `PACK=<id>` runs one pack, `DEBUG=1` lists the least-shown items. At 3
 a day each item is shown, at minimum / median: *Comarques i capitals* 3 / 4,
-*Comarques* 7 / 9, *Unió Europea* 5 / 7, *Comunitats* 7 / 11.
+*Comarques* 7 / 9, *Unió Europea* 5 / 7, *Comunitats* 7 / 11, *Àfrica* 3 / 3,
+*Amèrica del Nord* 5 / 8, *Amèrica del Sud* 7 / 11, *Àsia* 3 / 4, *Oceans* 21 / 21,
+*Mars i golfs* 6 / 8. Àfrica and Àsia are the two that need all three sessions a day.
 
 **`e2e.mjs`** serves `docs/` itself and drives headless Chrome over the DevTools
 Protocol with Node's built-in `WebSocket` — no npm, no test framework. It fails on any
 console error. It walks: the picker and its order; home; options and the Lluçanès toggle;
 a full session including the climb-down; the study map (labels, decluttering, clipping,
 zoom, tapping); every other pack (no capitals anywhere in *Comarques*; EU tap rings and
-photo credits; the Canàries inset, Ceuta, two capitals, the uncropped León photo); and the
-migration of old progress. `SHOTS=1` writes `/tmp/e2e-*.png`; `SHOTS=screenshots`
+photo credits; the Canàries inset, Ceuta, two capitals, the uncropped León photo); the
+world packs (question counts, no overlapping tap rings, three capitals, disputed and
+non-independent places, a 5-place session, land that swallows taps, the ocean question,
+the Caspi); and the migration of old progress. `SHOTS=1` writes `/tmp/e2e-*.png`; `SHOTS=screenshots`
 regenerates the README's screenshots.
 
 ---
@@ -332,6 +366,8 @@ regenerates the README's screenshots.
 | `scheduler.js` | `LEECH_WRONG` | 3 | misses before an item is a leech |
 | `scheduler.js` | `COOLDOWN` | 12 min | no repeat within a sitting |
 | `fetch-geo*.mjs` | `TARGET*` | 9000 / 9000 / 12000 | vertices kept after simplification |
+| `fetch-geo-mon.mjs` | `target` per topic | 11000–16000 | the same, per continent |
+| `fetch-geo-mar.mjs` | `TARGET_WATER` / `TARGET_LAND` | 8000 / 12000 | water can be coarse: the land covers its coast |
 | `fetch-geo-*.mjs` | `SMALL` | 400 units² | below this a place gets a tap ring |
 
 After changing any scheduler constant, run `node build/sim-scheduler.mjs`.
@@ -469,6 +505,46 @@ phone. Where name + capital will not fit, the name alone is tried before giving 
 lifted full-extent coverage of the comarques from 48% to 55%). A place can give a shorter
 capital for its label (`etiqueta`: "Las Palmas i Santa Cruz").
 
+### The world packs
+
+**The owner set the scope.** Àsia includes Rússia (whole), Turquia, Xipre, the Caucasus,
+Kazakhstan and Egipte; Àfrica has the Sàhara Occidental; Amèrica is split North-and-Central
+/ South, with the Caribbean in the first; Groenlàndia, Puerto Rico and the Guaiana
+Francesa are asked like countries but their cards say they are not; 5 oceans; about 24
+seas and gulfs, the Caspi in, bays out (the golf de Bengala and the mar Cantàbric are
+gulfs in Catalan, so they are in). Continent packs ask capitals; there is no
+places-only variant.
+
+**Disputed or split capitals accept every answer, and say why.** "A / B" (or "A / B / C"
+for Sud-àfrica) is accepted whole or in part; `nota` explains the dispute in a sentence,
+neutrally. Lists read "A, B i C" everywhere (`andList`).
+
+**Disputed areas go with whoever administers them.** GISCO draws Caixmir, Arunachal
+Pradesh, Aksai Chin, the Kurils, Hala'ib, Ilemi and Essequibo as separate features; left
+alone they are holes in India or China. `ADMIN` gives each to its administrator and the
+outline is dissolved. Abyei and Bir Tawil stay grey. Taiwan and the Guaiana Francesa,
+which GISCO folds into China and France, are cut out by location (`SPLIT`).
+
+**One equal-area projection per continent, chosen in the build.** LAEA for the roughly
+round continents, Albers for the wide ones; longitudes are taken relative to the centre,
+so Chukotka sits east of Japan instead of on the other side of the planet.
+
+**The water maps: oceans are all their seas, land is a cover.** An ocean is the dissolve
+of every IHO area the IHO groups under it, so tapping the mar Carib in the oceans pack
+picks the Atlàntic. The land is drawn *over* the water and takes taps (so a tap on the
+Sahara picks nothing), which also hides every mismatch between the IHO and GISCO
+coastlines. The seas map draws the oceans underneath as untappable water.
+
+**Water has no outlines; borders are their own layer.** Some IHO borders survive the
+dissolve as two copies a few metres apart (see Traps), and an outline would draw them as
+a line through the middle of the Pacific. So water places are filled only, and the lines
+between *different* places are emitted as `BORDERS`. A couple of short stretches are
+missing from that layer for the same reason (south of Cape Horn); highlighting a place
+still shows its whole extent.
+
+**Small packs study a third.** See *A session*: without `studyCount` the oceans pack
+was all cards and no questions.
+
 ### Photos
 
 **Landmarks chosen by hand, fetched with their credits.** Auto-picking a place's own
@@ -533,6 +609,35 @@ next run silently attached to that stale browser and reported failures that were
 real. It now kills its children on `uncaughtException`/`unhandledRejection`. If results
 look impossible, check for an orphan on port 9333.
 
+**The antimeridian is a seam.** GISCO cuts Russia at ±179.99998°, not ±180, and the two
+sides share no vertex, so the cut showed as a line across Chukotka. `fetch-geo-mon.mjs`
+snaps it to ±180, gives both sides the union of the seam's vertices (`weldSeam`) and
+dissolves the pieces. `relLon` wraps +180 onto −180, which is right for a continent and
+wrong for a world map: `equalEarth` keeps both edges.
+
+**The IHO sea areas do not always share vertices.** The North Atlantic describes the
+equator off Africa with a vertex every 0.09°, the South Atlantic with one segment, so the
+border did not weld and survived the ocean's dissolve. `weldTJunctions` inserts each
+neighbour's vertices into long segments. What remains (a vertex two areas share on
+different edges, near the Galápagos) gives two copies of one border with different ends;
+`dissolveMany` matches arcs by their points as well as their ids, and the few copies that
+still differ are why water is drawn without outlines. A neighbour-based junction rule
+was tried and pinned every self-touching coastline, multiplying the output by twenty.
+
+**Ring chaining was quadratic.** Fine for Osona, hopeless for an ocean of tens of
+thousands of arcs: `chainRings` now looks up the next arc by its endpoint.
+
+**A small island can be simplified out of existence.** One arc closing on itself keeps at
+least its three most significant points (`simplifyTopology`), or Barbados and the
+Maldives vanish with their whole country.
+
+**Water rules out-specify the highlights.** `svg.mapa.aigua .zona` beats
+`svg.mapa .destacat`, so a tapped sea did not light up; the highlight colours are restated
+for water.
+
+**Wikipedia titles want straight apostrophes.** "Saint Basil’s Cathedral" with a curly
+quote finds nothing; the `LANDMARKS` titles use `'`.
+
 **The e2e can be wrong too.** Twice while adding the packs a failure was the test, not the app: tapping
 the centre of an archipelago's bounding box lands in the sea, and "País Basc" matches a
 naive /país/ check. Read the failure before changing the app.
@@ -544,8 +649,8 @@ naive /país/ check. Read the failure before changing the app.
 **Run it locally:** `cd docs && python3 -m http.server 8000`. Opening `index.html` as a
 `file://` URL will not work — ES modules need a real origin.
 
-**Add a pack on an existing topic** — one entry in `packs.js` (position = picker order),
-then run both checks.
+**Add a pack on an existing topic** — one entry in `packs.js` (position = picker order,
+`group` = the heading it sits under), then run both checks.
 
 **Add a topic:**
 1. A build script writing `docs/data/<id>-geo.js` — reuse `geo-lib.mjs`; assert the
@@ -557,6 +662,10 @@ then run both checks.
 4. A loader in `topics.js` with the topic's `words`.
 5. The pack in `packs.js`, the three data files in `sw.js`, a `CACHE` bump.
 6. `node build/sim-scheduler.mjs` (it simulates every pack) and a section in `e2e.mjs`.
+
+**Add another continent** — much shorter: an entry in `TOPICS` in `fetch-geo-mon.mjs`
+(projection, count, which polygons to keep), its hints file, `continent('<id>', …)` in
+`topics.js`, its `LANDMARKS`, then steps 5–6 above.
 
 **Replace a photo** — set `file:` on its `LANDMARKS` entry (it is refetched
 automatically), adjust the caption if needed, run `fetch-photos.mjs` and

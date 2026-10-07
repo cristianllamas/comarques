@@ -14,10 +14,21 @@ a connection once opened. Each device keeps its own progress.
 | **Comarques** | the same map | where it is | 42 |
 | **Comunitats autònomes** | 17 comunitats + Ceuta and Melilla | where it is, its capital | 34 |
 | **Unió Europea** | the 27 member states | where it is, its capital | 53 |
+| **Àfrica** | 54 states + the Sàhara Occidental | where it is, its capital | 108 |
+| **Amèrica del Nord i Central** | 23 states + Groenlàndia and Puerto Rico | where it is, its capital | 47 |
+| **Amèrica del Sud** | 12 states + the Guaiana Francesa | where it is, its capital | 26 |
+| **Àsia** | 49 states + Palestina and Taiwan (Rússia, Turquia, Xipre, the Caucasus, Kazakhstan and Egipte included) | where it is, its capital | 100 |
+| **Oceans** | the five oceans | where it is | 5 |
+| **Mars i golfs** | 23 seas and gulfs + the Caspi | where it is, which ocean it belongs to | 47 |
+
+The picker groups them under *Catalunya*, *Espanya*, *Europa* and *Món*.
 
 A capital is not asked where the question would answer itself (Luxemburg, Madrid,
-Múrcia) or where there is none (Ceuta and Melilla are their own city); it still appears
-on the card.
+Múrcia, Mèxic, Singapur…) or where there is none (Ceuta and Melilla are their own city);
+it still appears on the card. Where the capital is disputed or split (Bolívia, Sud-àfrica,
+Israel, Palestina, Tanzània…) every answer is accepted and the card explains why there is
+more than one. Places that are not independent countries (Groenlàndia, Puerto Rico, the
+Guaiana Francesa) say so on their card.
 
 ---
 
@@ -68,7 +79,7 @@ testing something seconds after seeing it measures short-term memory, not learni
 <img src="screenshots/4-quiz.png" width="220" align="right" alt="Typed question">
 <img src="screenshots/16-ue-quiz.png" width="220" align="right" alt="Map question">
 
-**2 · Recorda** — twelve questions, four kinds:
+**2 · Recorda** — twelve questions (fewer in a small pack), of these kinds:
 
 | Kind | Example |
 |---|---|
@@ -76,9 +87,11 @@ testing something seconds after seeing it measures short-term memory, not learni
 | name the highlighted shape | *Quina comarca és la destacada?* |
 | give the capital | *Quina és la capital del Segrià?* |
 | name the place from its capital | *Toledo és la capital de quina comunitat autònoma?* |
+| say which ocean a sea belongs to (*Mars i golfs*) | *A quin oceà pertany el mar Negre?* |
 
-Pinch to zoom on the map; the tiniest places (Malta, Luxembourg, Ceuta, Melilla) have a
-ring around them that can be seen and tapped at full size.
+Pinch to zoom on the map; the tiniest places (Malta, Luxembourg, Ceuta, Melilla, the
+Antilles, the golf Pèrsic) have a ring around them that can be seen and tapped at full
+size.
 
 <br clear="right">
 
@@ -114,6 +127,7 @@ introduced in a random order that stays fixed for that device.
 
 <img src="screenshots/9-studymap.png" width="220" align="right" alt="Study map">
 <img src="screenshots/22-esp-studymap.png" width="220" align="right" alt="Study map, comunitats">
+<img src="screenshots/32-mar-studymap.png" width="220" align="right" alt="Study map, seas">
 
 The whole map with names (and capitals) written on the shapes, to explore at one's own
 pace. Not every name fits on a phone at once, so the biggest places are labelled first and
@@ -149,17 +163,24 @@ Correct content matters more than anything else here: this teaches facts for exa
   The build checks there are 43 comarques and the per-província counts match the official
   table (Barcelona 13, Girona 8, Lleida 12, Tarragona 10). Cerdanya, which straddles
   Girona and Lleida, is officially Girona and the card says it straddles both.
-- **Comunitats autònomes and Unió Europea:** official boundaries from
+- **Comunitats autònomes, Unió Europea and the continents:** official boundaries from
   [Eurostat GISCO](https://ec.europa.eu/eurostat/web/gisco). Catalan names, capitals and
   articles are written by hand (Optimot / IEC forms) and checked against the geometry by
   the build. Canàries are drawn in a box at the bottom left, as on most maps of Spain;
-  overseas territories are left off the EU map.
+  overseas territories are left off the EU map. On the continents, disputed areas are
+  drawn with the country that administers them (Caixmir with India, Essequibo with
+  Guyana) and the card mentions the dispute; Hawaii is left off the America map.
+- **Oceans and seas:** the IHO's sea areas, from
+  [Marine Regions](https://www.marineregions.org) (CC BY 4.0, credited on the study map);
+  an ocean is all of its seas, and each sea's ocean follows the IHO's grouping (the
+  Mediterrani belongs to the Atlàntic). The Caspi, a closed sea, comes from Natural Earth.
 - **Two cases with no official capital:** the País Basc and Castella i Lleó have no
   capital set by law. The app uses the seats of government, Vitòria and Valladolid (the
   usual textbook answer), and the hook says so.
 - **Memory hooks:** short, concrete facts written by hand for every place.
 - **Photos:** the comarques photos were supplied by the family. The EU and comunitats
-  photos are landmarks chosen and reviewed by hand, from
+  photos are landmarks chosen and reviewed by hand; the continents' were chosen by hand
+  and checked on contact sheets without the owner's review. All come from
   [Wikimedia Commons](https://commons.wikimedia.org). Each shows its caption — which
   always names the city, so the Alhambra on the Spain card is never mistaken for Madrid —
   and the author and licence, linked to the original.
@@ -181,5 +202,5 @@ SHOTS=screenshots node build/e2e.mjs     # …and regenerate the screenshots in 
 ```
 
 No dependencies: no npm, no framework, no bundler. Pushing to `main` publishes the site.
-The tag `pre-packs` marks the last comarques-only version, should a rollback ever be
-needed.
+The tag `pre-packs` marks the last comarques-only version, and `pre-world` the last
+version before the continents, oceans and seas, should a rollback ever be needed.

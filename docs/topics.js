@@ -19,6 +19,11 @@
 // `insets`: framed boxes for places drawn away from their real position (Canàries).
 //
 // A capital written "A / B" is two capitals, both accepted (Canàries, Vallès Occidental).
+//
+// The world topics add: `markR`, a smaller tap ring where rings would overlap (the
+// Antilles); `focus`, the box to zoom to for a place split by the map's edge (the
+// Pacific); `ocea`, the ocean a sea belongs to; and, for the water maps, `water`, a
+// `cover` layer (the land, drawn over the water) and a `credit` line for the data.
 
 const loaders = {
   async cat() {
@@ -134,6 +139,129 @@ const loaders = {
   },
 };
 
+// ---------------------------------------------------------------- the world
+//
+// The continents share one shape of data (afr, amn, ams, asi: *-geo.js from
+// build/fetch-geo-mon.mjs) and differ only in their words. Oceans and seas are water
+// places on a world map, with the land drawn over them as `cover`.
+
+const COUNTRY_WORDS = {
+  many: 'països',
+  whichShape: 'Quin país és el destacat?',
+  capitalOfWhich: 'és la capital de quin país?',
+  capitalsOfWhich: 'són les capitals de quin país?',
+  placeholder: 'El país…',
+  tapToSee: 'Toca un país per veure’l de prop.',
+  tapHelp: 'Toca’l al mapa. Pots fer zoom amb dos dits.',
+  wrongTap: (name) => `Has tocat <b>${name}</b>. El que buscaves és aquest.`,
+};
+
+// Neutral where a place is not a country: Groenlàndia, Puerto Rico, the Guaiana Francesa,
+// the Sàhara Occidental. "Quin país" would be wrong for them, and calling them anything
+// else would give the answer away — as with Ceuta and Melilla.
+const TERRITORY_WORDS = {
+  ...COUNTRY_WORDS,
+  many: 'països i territoris',
+  whichShape: 'Quin país o territori és el destacat?',
+  capitalOfWhich: 'és la capital de quin país o territori?',
+  capitalsOfWhich: 'són les capitals de quin país o territori?',
+};
+
+// Places imported from a continent's geo file, whose geo export is COUNTRIES.
+function continent(id, words) {
+  return async () => {
+    const [{ VIEWBOX, COUNTRIES, CONTEXT }, { HINTS }, { PHOTOS, CREDITS = {} }] = await Promise.all([
+      import(`./data/${id}-geo.js`), import(`./data/${id}-hints.js`), import(`./data/${id}-photos.js`),
+    ]);
+    return {
+      id,
+      viewBox: VIEWBOX,
+      places: COUNTRIES.map((c) => fromHints(id, c, HINTS[c.code], PHOTOS, CREDITS))
+        .sort((a, b) => a.name.localeCompare(b.name, 'ca')),
+      context: [CONTEXT],
+      borders: [],
+      words,
+    };
+  };
+}
+
+function fromHints(id, c, h, PHOTOS = {}, CREDITS = {}) {
+  return {
+    code: c.code, name: h.name, capital: h.capital ?? null,
+    art: h.art, hook: h.hook, accepta: h.accepta || [], accNom: [...(h.accNom || []), ...bareName(h.name)],
+    askCapital: h.preguntaCapital !== false, capitalLabel: h.etiqueta,
+    ocea: h.ocea ?? null,
+    photo: PHOTOS[c.code] ? `img/${id}/${PHOTOS[c.code]}` : null, credit: CREDITS[c.code] || null,
+    extra: h.nota || null,
+    label: c.label, area: c.area, d: c.d, mark: c.mark, markR: c.markR, focus: c.focus,
+  };
+}
+
+/** "mar de Barents" also accepts "Barents"; "oceà Pacífic", "Pacífic". */
+function bareName(name) {
+  const m = String(name).match(/^(?:mar|golf|oceà)\s+(?:de la |de l['’]|del |de |d['’])?(.+)$/i);
+  return m ? [m[1]] : [];
+}
+
+// The IHO sea areas are CC BY, so the water maps carry a credit line.
+const WATER_CREDIT = 'Límits dels oceans i mars: Marine Regions (IHO Sea Areas), CC BY 4.0.';
+
+Object.assign(loaders, {
+  afr: continent('afr', TERRITORY_WORDS),
+  amn: continent('amn', TERRITORY_WORDS),
+  ams: continent('ams', TERRITORY_WORDS),
+  asi: continent('asi', TERRITORY_WORDS),
+
+  async oce() {
+    const [{ VIEWBOX, OCEANS, CONTEXT, BORDERS }, { HINTS }, { LAND }] = await Promise.all([
+      import('./data/oce-geo.js'), import('./data/oce-hints.js'), import('./data/terra-geo.js'),
+    ]);
+    return {
+      id: 'oce', water: true, credit: WATER_CREDIT,
+      viewBox: VIEWBOX,
+      places: OCEANS.map((c) => fromHints('oce', c, HINTS[c.code])),
+      context: [CONTEXT],
+      cover: [LAND],
+      borders: [BORDERS],
+      words: {
+        many: 'oceans',
+        whichShape: 'Quin oceà és el destacat?',
+        placeholder: 'L’oceà…',
+        tapToSee: 'Toca un oceà per veure’l de prop.',
+        tapHelp: 'Toca’l al mapa. Pots fer zoom amb dos dits.',
+        wrongTap: (name) => `Has tocat <b>${name}</b>. El que buscaves és aquest.`,
+      },
+    };
+  },
+
+  async mar() {
+    const [{ VIEWBOX, SEAS, BORDERS }, { OCEANS }, { HINTS }, { LAND }] = await Promise.all([
+      import('./data/mar-geo.js'), import('./data/oce-geo.js'), import('./data/mar-hints.js'),
+      import('./data/terra-geo.js'),
+    ]);
+    return {
+      id: 'mar', water: true, credit: WATER_CREDIT,
+      viewBox: VIEWBOX,
+      places: SEAS.map((c) => fromHints('mar', c, HINTS[c.code]))
+        .sort((a, b) => a.name.localeCompare(b.name, 'ca')),
+      // The oceans, drawn as untappable water under the seas.
+      context: OCEANS.map((o) => o.d),
+      cover: [LAND],
+      borders: [BORDERS],
+      words: {
+        many: 'mars i golfs',
+        // Neutral: "quin mar" would be wrong for the gulfs, and give the answer away.
+        whichShape: 'Quin mar o golf és el destacat?',
+        placeholder: 'El mar…',
+        oceanPlaceholder: 'L’oceà…',
+        tapToSee: 'Toca un mar per veure’l de prop.',
+        tapHelp: 'Toca’l al mapa. Pots fer zoom amb dos dits.',
+        wrongTap: (name) => `Has tocat <b>${name}</b>. El que buscaves és aquest.`,
+      },
+    };
+  },
+});
+
 const cache = new Map();
 
 export function loadTopic(id) {
@@ -150,10 +278,14 @@ export function activeCodes(topic, toggleOn) {
   return topic.places.map((p) => p.code).filter((c) => !hidden.has(c));
 }
 
-/** The (code, facet) pairs a pack asks about. A place whose capital is not asked has no capital facet. */
+/**
+ * The (code, facet) pairs a pack asks about. A place whose capital is not asked has no
+ * capital facet; a sea with no ocean (the Caspi) has no ocean facet.
+ */
 export function activePairs(topic, pack, toggleOn) {
+  const asks = (place, f) => (f === 'capital' ? place.capital && place.askCapital !== false
+    : f === 'ocea' ? !!place.ocea : true);
   return activeCodes(topic, toggleOn).flatMap((code) => pack.facets
-    .filter((f) => f !== 'capital'
-      || (topic.byCode.get(code).capital && topic.byCode.get(code).askCapital !== false))
+    .filter((f) => asks(topic.byCode.get(code), f))
     .map((facet) => ({ code, facet })));
 }

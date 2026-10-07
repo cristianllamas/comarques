@@ -184,7 +184,11 @@ export function dissolve(shapes, arcs, indexes) {
       for (const ring of poly)
         for (const ref of ring)
           if (!internal.has(ref.arc)) segs.push(ref);
+  return chainRings(segs, arcs);
+}
 
+/** Chain loose arc references end to end into closed rings. */
+function chainRings(segs, arcs) {
   // Endpoints are compared on the same quantised grid the topology uses, never as raw
   // floats: the identical junction comes back as 2.4961408345561957 from one ring and
   // 2.496140834556191 from the other, so exact float equality never joins them.
@@ -195,6 +199,12 @@ export function dissolve(shapes, arcs, indexes) {
     return r.rev ? [last, first] : [first, last];
   };
 
+  // Index the loose arcs by both endpoints, so finding the next one is a lookup rather
+  // than a scan (an ocean is tens of thousands of arcs).
+  const byEnd = new Map();
+  const add = (k, i) => { let a = byEnd.get(k); if (!a) byEnd.set(k, (a = [])); a.push(i); };
+  segs.forEach((r, i) => { const [a, b] = ends(r); add(a, i); add(b, i); });
+
   const pool = new Set(segs.keys());
   const rings = [];
 
@@ -204,18 +214,19 @@ export function dissolve(shapes, arcs, indexes) {
     const chain = [segs[seed]];
     let [head, tail] = ends(segs[seed]);
 
-    for (let grew = true; grew && tail !== head; ) {
-      grew = false;
-      for (const i of pool) {
-        const [a, b] = ends(segs[i]);
-        if (a === tail) { chain.push(segs[i]); tail = b; }
-        else if (b === tail) { chain.push({ arc: segs[i].arc, rev: !segs[i].rev }); tail = a; }
-        else continue;
-        pool.delete(i); grew = true; break;
-      }
+    while (tail !== head) {
+      const i = (byEnd.get(tail) || []).find((j) => pool.has(j));
+      if (i === undefined) break;
+      const [a, b] = ends(segs[i]);
+      if (a === tail) { chain.push(segs[i]); tail = b; }
+      else { chain.push({ arc: segs[i].arc, rev: !segs[i].rev }); tail = a; }
+      pool.delete(i);
     }
     if (tail === head) rings.push(chain);
+    else rings.unchained = (rings.unchained || 0) + chain.length;
   }
+  // Arcs that never closed into a ring: a dissolve that loses some has torn the outline.
+  rings.unchained ||= 0;
   return rings;
 }
 
@@ -269,4 +280,174 @@ export function clipRing(ring, [x0, y0, x1, y1]) {
     if (!pts.length) break;
   }
   return pts.length >= 3 ? [...pts, pts[0]] : null;
+}
+
+// ---------------------------------------------------------------- world maps
+//
+// The comarques, Spain and the EU arrive in (or close to) a projection that suits them.
+// The continents and the oceans come from world layers in plain longitude/latitude, so
+// the builds project them here, to metres, before any topology or clipping happens —
+// the same order the EU build follows with its ready-projected EPSG:3035.
+
+const R = 6371008.8;
+const RAD = Math.PI / 180;
+
+/** Longitude relative to `lon0`, wrapped into [-180, 180): Chukotka sits just east of Japan. */
+export const relLon = (lon, lon0) => ((((lon - lon0) % 360) + 540) % 360) - 180;
+
+/** Lambert azimuthal equal-area, centred on (lon0, lat0). Good for a continent that is about as tall as it is wide. */
+export function laea(lon0, lat0) {
+  const s0 = Math.sin(lat0 * RAD), c0 = Math.cos(lat0 * RAD);
+  return ([lon, lat]) => {
+    const l = relLon(lon, lon0) * RAD, p = lat * RAD;
+    const sp = Math.sin(p), cp = Math.cos(p), cl = Math.cos(l);
+    const k = Math.sqrt(2 / Math.max(1e-12, 1 + s0 * sp + c0 * cp * cl));
+    return [R * k * cp * Math.sin(l), R * k * (c0 * sp - s0 * cp * cl)];
+  };
+}
+
+/** Albers equal-area conic: for wide, mid-latitude land masses (Asia, North America). */
+export function albers(lon0, lat1, lat2, lat0) {
+  const s1 = Math.sin(lat1 * RAD), s2 = Math.sin(lat2 * RAD);
+  const n = (s1 + s2) / 2;
+  const C = Math.cos(lat1 * RAD) ** 2 + 2 * n * s1;
+  const rho0 = (R * Math.sqrt(C - 2 * n * Math.sin(lat0 * RAD))) / n;
+  return ([lon, lat]) => {
+    const rho = (R * Math.sqrt(Math.max(0, C - 2 * n * Math.sin(lat * RAD)))) / n;
+    const t = n * relLon(lon, lon0) * RAD;
+    return [rho * Math.sin(t), rho0 - rho * Math.cos(t)];
+  };
+}
+
+/** Equal Earth (Šavrič, Patterson & Jenny, 2018): an equal-area world map that still looks familiar. */
+export function equalEarth(lon0 = 0) {
+  const A1 = 1.340264, A2 = -0.081106, A3 = 0.000893, A4 = 0.003796, M = Math.sqrt(3) / 2;
+  return ([lon, lat]) => {
+    // Not relLon(): a world map needs +180° on the right edge and −180° on the left, not
+    // both folded onto the left.
+    let d = lon - lon0;
+    if (d > 180) d -= 360; else if (d < -180) d += 360;
+    const l = d * RAD;
+    const t = Math.asin(M * Math.sin(lat * RAD)), t2 = t * t, t6 = t2 * t2 * t2;
+    const x = (2 * Math.sqrt(3) * l * Math.cos(t)) / (3 * (9 * A4 * t6 * t2 + 7 * A3 * t6 + 3 * A2 * t2 + A1));
+    const y = t * (A1 + A2 * t2 + t6 * (A3 + A4 * t2));
+    return [R * x, R * y];
+  };
+}
+
+/**
+ * Mean point of a polygon's outer ring, in absolute degrees. Longitudes are averaged
+ * relative to `lon0` first, so an island chain on the antimeridian does not average to
+ * the middle of the planet.
+ */
+export function polyCentre(poly, lon0 = 0) {
+  let x = 0, y = 0;
+  for (const [lon, lat] of poly[0]) { x += relLon(lon, lon0); y += lat; }
+  const n = poly[0].length;
+  return [relLon(x / n + lon0, 0), y / n];
+}
+
+/**
+ * Dissolve any number of shapes into one outline: an arc used by two *different* shapes
+ * of the group is internal and goes. Counting shapes, not references, matters for the
+ * same reason as in dissolve(): one shape may legitimately use an arc twice.
+ *
+ * Arcs are matched by their (simplified) points, not only by id. The topology cuts arcs
+ * where the set of owners changes, and that can go wrong when a vertex two shapes share
+ * sits on different edges in each (the IHO's North and South Pacific near the
+ * Galápagos): each side then gets its own copy of the same border, with its own id, and
+ * the border would survive the dissolve as a line through the ocean. (Copies that end
+ * a few metres apart still do; the water maps therefore draw no outlines, see
+ * fetch-geo-mar.mjs.)
+ */
+export function dissolveMany(shapes, arcs, indexes) {
+  const q = (p) => `${Math.round(p[0] * 1e6)},${Math.round(p[1] * 1e6)}`;
+  const canon = new Map();   // arc id -> canonical id
+  const seen = new Map();    // point sequence -> canonical id
+  const canonOf = (a) => {
+    if (!canon.has(a)) {
+      const fwd = arcs[a].map(q).join(';'), rev = arcs[a].map(q).reverse().join(';');
+      const c = seen.get(fwd) ?? seen.get(rev) ?? a;
+      seen.set(fwd, c);
+      canon.set(a, c);
+    }
+    return canon.get(a);
+  };
+  const users = new Map();
+  for (const i of indexes) {
+    const own = new Set();
+    for (const poly of shapes[i].rings) for (const ring of poly) for (const r of ring) own.add(canonOf(r.arc));
+    for (const a of own) users.set(a, (users.get(a) || 0) + 1);
+  }
+  const internal = new Set([...users].filter(([, n]) => n > 1).map(([a]) => a));
+  const segs = [];
+  for (const i of indexes)
+    for (const poly of shapes[i].rings)
+      for (const ring of poly)
+        for (const ref of ring)
+          if (!internal.has(canonOf(ref.arc))) segs.push(ref);
+  return chainRings(segs, arcs);
+}
+
+/**
+ * Make neighbours share vertices along their common borders ("T-junctions").
+ *
+ * The topology welds two borders only where both sides have the same vertices. GISCO
+ * and the ICGC data do; the IHO sea areas often do not: the North Atlantic describes the
+ * equator off Africa with a vertex every 0.09°, the South Atlantic with one straight
+ * segment. Unwelded, both are drawn and the line between them stays visible inside a
+ * dissolved ocean. So every vertex of one feature lying on another feature's segment is
+ * inserted into that segment.
+ *
+ * Only segments longer than `minLen` are examined: borders drawn in open water are long
+ * straight runs, coastlines are dense short ones, and checking those would be slow and
+ * pointless (`polys` per feature, in degrees; returns the same structure).
+ */
+export function weldTJunctions(features, { minLen = 0.05, eps = 1e-7, cell = 0.5 } = {}) {
+  const xs = [], ys = [], owner = [];
+  features.forEach((polys, fi) => {
+    for (const poly of polys) for (const r of poly) for (const [x, y] of r) { xs.push(x); ys.push(y); owner.push(fi); }
+  });
+  const key = (cx, cy) => cx * 100000 + cy;
+  const grid = new Map();
+  for (let i = 0; i < xs.length; i++) {
+    const k = key(Math.floor(xs[i] / cell), Math.floor(ys[i] / cell));
+    let a = grid.get(k);
+    if (!a) grid.set(k, (a = []));
+    a.push(i);
+  }
+  let inserted = 0;
+  const out = features.map((polys, fi) => polys.map((poly) => poly.map((r) => {
+    const res = [r[0]];
+    for (let j = 1; j < r.length; j++) {
+      const [ax, ay] = r[j - 1], [bx, by] = r[j];
+      const dx = bx - ax, dy = by - ay, len2 = dx * dx + dy * dy;
+      if (len2 > minLen * minLen) {
+        const hits = [];
+        const cx0 = Math.floor(Math.min(ax, bx) / cell), cx1 = Math.floor(Math.max(ax, bx) / cell);
+        const cy0 = Math.floor(Math.min(ay, by) / cell), cy1 = Math.floor(Math.max(ay, by) / cell);
+        const len = Math.sqrt(len2);
+        for (let cx = cx0; cx <= cx1; cx++) for (let cy = cy0; cy <= cy1; cy++) {
+          for (const i of grid.get(key(cx, cy)) || []) {
+            if (owner[i] === fi) continue;
+            const px = xs[i] - ax, py = ys[i] - ay;
+            const t = (px * dx + py * dy) / len2;
+            if (t <= 0 || t >= 1) continue;
+            if (Math.abs(px * dy - py * dx) / len > eps) continue;
+            hits.push([t, xs[i], ys[i]]);
+          }
+        }
+        hits.sort((p, q) => p[0] - q[0]);
+        let last = null;
+        for (const [, x, y] of hits) {
+          if (last && last[0] === x && last[1] === y) continue;
+          res.push((last = [x, y])); inserted++;
+        }
+      }
+      res.push(r[j]);
+    }
+    return res;
+  })));
+  out.inserted = inserted;
+  return out;
 }
