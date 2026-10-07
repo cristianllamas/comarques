@@ -6,6 +6,7 @@
   --be:#1f6f8b; --be-bg:#e3f0f5;
   --mal:#c1670c; --mal-bg:#fbeadb;
   --accent:#1b3a5c; --ctx:#efebe3; --ctx-line:#b5afa3;
+  --aigua:#d3e6ef; --aigua-ctx:#e4eef2; --limit:#7ea6bd; --terra:#ebe6da;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -14,6 +15,7 @@
     --be:#7fc4dd; --be-bg:#17323c;
     --mal:#eb9c4d; --mal-bg:#3a2714;
     --accent:#9ec7e8; --ctx:#26252c; --ctx-line:#4a4650;
+    --aigua:#1c3240; --aigua-ctx:#1a252d; --limit:#4f7a93; --terra:#2f2d35;
   }
 }
 *{box-sizing:border-box}
@@ -33,9 +35,9 @@ h2{font-size:1.35rem;margin:0}
 svg.mapa{width:100%;height:auto;display:block;touch-action:none;
   background:var(--card);border-radius:12px;border:1px solid rgba(128,128,128,.22)}
 svg.mapa.triable{cursor:crosshair}
-svg.mapa .zona{fill:var(--fill);stroke:var(--line);stroke-width:1;
+svg.mapa .zona{fill:var(--fill);fill-rule:evenodd;stroke:var(--line);stroke-width:1;
   stroke-linejoin:round;vector-effect:non-scaling-stroke}
-svg.mapa .contexte{fill:var(--ctx);stroke:var(--ctx-line);stroke-width:.6;
+svg.mapa .contexte{fill:var(--ctx);fill-rule:evenodd;stroke:var(--ctx-line);stroke-width:.6;
   vector-effect:non-scaling-stroke;pointer-events:none}
 svg.mapa .requadre{fill:var(--card);stroke:var(--line);stroke-width:1;
   vector-effect:non-scaling-stroke;pointer-events:none}
@@ -49,6 +51,23 @@ svg.mapa .provincia{fill:none;stroke:var(--prov);stroke-width:3;
 svg.mapa .destacat{fill:var(--accent);fill-opacity:.55;stroke:var(--accent);stroke-width:2}
 svg.mapa .correcte{fill:var(--be);fill-opacity:.7;stroke:var(--be);stroke-width:2}
 svg.mapa .error{fill:var(--mal);fill-opacity:.6;stroke:var(--mal);stroke-width:2}
+/* Oceans and seas: the places are water, drawn without outlines (the IHO areas do not
+   always weld, and an outline would show a seam through an ocean); the lines between
+   them are their own layer, and the land is a cover over everything but the rings. */
+svg.mapa.aigua{background:var(--card)}
+svg.mapa.aigua .zona{fill:var(--aigua);stroke:none}
+svg.mapa.aigua .contexte{fill:var(--aigua-ctx);stroke:none}
+/* restated, because the water fill above is more specific than the shared highlights */
+svg.mapa.aigua .zona.destacat{fill:var(--accent);fill-opacity:.55;stroke:none}
+svg.mapa.aigua .zona.correcte{fill:var(--be);fill-opacity:.7;stroke:none}
+svg.mapa.aigua .zona.error{fill:var(--mal);fill-opacity:.6;stroke:none}
+svg.mapa .limit{fill:none;stroke:var(--limit);stroke-width:1;stroke-linejoin:round;
+  vector-effect:non-scaling-stroke;pointer-events:none}
+/* The land takes taps (and does nothing with them): otherwise a tap on Africa would fall
+   through to the Atlantic underneath it. */
+svg.mapa .terra{fill:var(--terra);stroke:var(--ctx-line);stroke-width:.4;
+  vector-effect:non-scaling-stroke}
+svg.mapa.aigua .anella{stroke:var(--prov)}
 
 /* cards & text --------------------------------------------------------- */
 .fitxa{background:var(--card);border:1px solid rgba(128,128,128,.22);
@@ -128,3 +147,5 @@ svg.mapa .etiqueta .cap{font-weight:500;font-style:italic;fill:var(--fade)}
 .tema:hover,.tema:focus-visible{border-color:var(--accent)}
 .tema-titol{font-weight:700;font-size:1.05rem}
 .tema-desc{color:var(--fade);font-size:.9rem}
+.grup{font-size:.8rem;letter-spacing:.09em;text-transform:uppercase;color:var(--fade);
+  margin:10px 0 -4px;font-weight:700}

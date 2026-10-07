@@ -1,7 +1,13 @@
 # Fotos
 
-Una carpeta per tema: `cat/` per a les comarques. Deixa-hi les fotos i executa
-`node build/scan-photos.mjs cat` (amb el nom de la carpeta).
+Una carpeta per tema: `cat/` (comarques), `esp/` (comunitats autònomes), `ue/` (Unió
+Europea). Deixa-hi les fotos i executa `node build/scan-photos.mjs cat` (amb el nom de la
+carpeta).
+
+Les fotos d'`esp/` i `ue/` les baixa `node build/fetch-photos.mjs esp` (o `ue`) de
+Wikimedia Commons, a partir dels monuments triats a mà dins d'aquell script, i en desa
+l'autor i la llicència a `credits.json`; l'app ho mostra sota la foto. Per canviar-ne una,
+fixa-hi un fitxer concret amb `file:` a l'script.
 
 El nom del fitxer pot ser el de la capital **o** el de la comarca. No importen accents,
 majúscules, apòstrofs, articles ni guions — tots aquests noms funcionen:

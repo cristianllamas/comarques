@@ -10,6 +10,14 @@ const BOX_MINUTES = [20, 120, 480, 1440, 2880, 5760, 11520]; // 20m, 2h, 8h, 1d,
 const LEECH_WRONG = 3;      // failures before an item is force-fed
 const COOLDOWN = 12 * MIN;  // don't show the same item twice in one sitting
 
+// A session: up to 6 study cards (Fase 1) and 12 questions (Fase 2), on different places.
+export const STUDY_CARDS = 6;
+export const QUIZ_CARDS = 12;
+// A session picks each place at most once, so a small pack (the five oceans) gets fewer
+// than 18 picks. Fase 1 then takes a third of them, never all: otherwise the oceans would
+// be all study and no questions. Every pack of 18 places or more is unaffected.
+export const studyCount = (picks) => Math.min(STUDY_CARDS, Math.floor(picks / 3));
+
 export const keyOf = (code, facet) => `${code}:${facet}`;
 
 export function newItem() {

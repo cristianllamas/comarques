@@ -5,17 +5,14 @@
 // Fase 2 makes them produce them. That order is the point: exposure primes, retrieval
 // fixes.
 
-import { PACKS, packById } from './packs.js';
+import { PACKS, GROUPS, packById } from './packs.js';
 import { loadTopic, activeCodes, activePairs } from './topics.js';
 import { Mapa } from './map.js';
 import { load, save, packState, resetPack } from './store.js';
 import { isCorrect, masked } from './answer.js';
-import { buildQuestion, options, withArticle, capitals } from './quiz.js';
-import { grade, markStudied, selectDue, ensureOrder, keyOf, newItem, progress }
-  from './scheduler.js';
-
-const STUDY_CARDS = 6;
-const QUIZ_CARDS = 12;
+import { buildQuestion, options, withArticle, capitals, andList, display } from './quiz.js';
+import { grade, markStudied, selectDue, ensureOrder, keyOf, newItem, progress,
+  STUDY_CARDS, QUIZ_CARDS, studyCount } from './scheduler.js';
 
 const app = document.getElementById('app');
 const root = load();
@@ -27,7 +24,10 @@ const codes = () => activeCodes(topic, state.toggle);
 const pairs = () => activePairs(topic, pack, state.toggle);
 // The comarques-only pack never mentions capitals, not even on the cards.
 const asksCapital = () => pack.facets.includes('capital');
-const solution = (c) => `<b>${c.name}</b>` + (asksCapital() && c.capital ? ` — ${capitals(c).join(' i ')}` : '');
+const asksOcean = () => pack.facets.includes('ocea');
+const solution = (c) => `<b>${display(c.name)}</b>`
+  + (asksCapital() && c.capital ? ` — ${andList(capitals(c))}` : '')
+  + (asksOcean() && c.ocea ? ` — oceà ${c.ocea}` : '');
 
 const h = (tag, cls, html) => {
   const e = document.createElement(tag);
@@ -69,10 +69,13 @@ function photoFor(code) {
 function placeCard(code, cls = 'fitxa') {
   const c = topic.byCode.get(code);
   const card = h('div', cls);
-  card.append(h('h2', null, c.name));
+  card.append(h('h2', null, display(c.name)));
   if (asksCapital() && c.capital) {
     const caps = capitals(c);
-    card.append(h('p', 'capital', `${caps.length > 1 ? 'Capitals' : 'Capital'}: <b>${caps.join('</b> i <b>')}</b>`));
+    card.append(h('p', 'capital', `${caps.length > 1 ? 'Capitals' : 'Capital'}: ${andList(caps.map((x) => `<b>${x}</b>`))}`));
+  }
+  if (asksOcean()) {
+    card.append(h('p', 'capital', c.ocea ? `Oceà: <b>${c.ocea}</b>` : 'No pertany a cap oceà'));
   }
   const photo = photoFor(code);
   if (photo) card.append(photo);
@@ -100,15 +103,18 @@ function screenPacks() {
   wrap.append(h('p', 'fase', 'Estudia geografia'));
   wrap.append(h('h1', null, 'Packs de contingut'));
   wrap.append(h('p', 'sub', 'Què vols estudiar?'));
-  for (const p of PACKS) {
-    const b = h('button', 'tema');
-    b.append(h('span', 'tema-titol', p.title), h('span', 'tema-desc', p.desc));
-    const saved = root.packs[p.id];
-    if (saved?.sessions) {
-      b.append(h('span', 'tema-desc', `${saved.sessions} sessi${saved.sessions === 1 ? 'ó' : 'ons'} fetes`));
+  for (const g of GROUPS) {
+    wrap.append(h('h2', 'grup', g));
+    for (const p of PACKS.filter((x) => x.group === g)) {
+      const b = h('button', 'tema');
+      b.append(h('span', 'tema-titol', p.title), h('span', 'tema-desc', p.desc));
+      const saved = root.packs[p.id];
+      if (saved?.sessions) {
+        b.append(h('span', 'tema-desc', `${saved.sessions} sessi${saved.sessions === 1 ? 'ó' : 'ons'} fetes`));
+      }
+      b.onclick = () => openPack(p.id);
+      wrap.append(b);
     }
-    b.onclick = () => openPack(p.id);
-    wrap.append(b);
   }
   return wrap;
 }
@@ -237,6 +243,7 @@ function screenStudyMap() {
   };
 
   wrap.append(comptador, fitxa);
+  if (topic.credit) wrap.append(h('p', 'nota', topic.credit));
 
   const zoomOut = h('button', 'secundari', 'Torna a veure-ho tot');
   zoomOut.onclick = () => { mapa.reset(); mapa.clearMarks(); };
@@ -262,13 +269,14 @@ function startSession() {
   const ps = pairs();
   ensureOrder(state, ps.map((p) => keyOf(p.code, p.facet)));
   const picks = selectDue(state, ps, STUDY_CARDS + QUIZ_CARDS, now);
+  const nStudy = studyCount(picks.length);
 
   // Fase 1 and Fase 2 work on *different* places (selectDue never returns the same
   // place twice). Testing what was just shown measures short-term memory more than it
   // builds long-term memory; the spacing effect says the test should come later. What is
   // studied now gets tested in a later session — these items are due again in 20 minutes.
-  const study = picks.slice(0, STUDY_CARDS);
-  const quizEntries = picks.slice(STUDY_CARDS, STUDY_CARDS + QUIZ_CARDS);
+  const study = picks.slice(0, nStudy);
+  const quizEntries = picks.slice(nStudy, nStudy + QUIZ_CARDS);
 
   session = {
     study, i: 0,
@@ -350,7 +358,8 @@ function screenQuiz() {
   input.autocomplete = 'off';
   input.autocapitalize = 'words';
   input.spellcheck = false;
-  input.placeholder = q.kind === 'capital-of' ? 'La capital…' : topic.words.placeholder;
+  input.placeholder = q.kind === 'capital-of' ? 'La capital…'
+    : q.kind === 'ocean-of' ? topic.words.oceanPlaceholder : topic.words.placeholder;
   const send = h('button', 'primari', 'Comprova');
   form.append(input, send);
   form.onsubmit = (ev) => { ev.preventDefault(); check(); };
@@ -391,7 +400,8 @@ function screenQuiz() {
       feedback.innerHTML = '<p class="ajuda">Tria la bona:</p>';
       const box = h('div', 'opcions');
       for (const opt of options(q, topic, codes())) {
-        const b = h('button', 'opcio', opt);
+        // Two capitals read "A i B" as everywhere else; the check still uses the raw value.
+        const b = h('button', 'opcio', display(andList(opt.split('/').map((x) => x.trim()))));
         b.onclick = () => {
           box.querySelectorAll('button').forEach((x) => { x.disabled = true; });
           const ok = isCorrect(opt, q.answer, q.accepta);

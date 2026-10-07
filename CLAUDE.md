@@ -1,10 +1,12 @@
 # CLAUDE.md
 
 Geography study app ("Estudia geografia"): content packs for the comarques of
-Catalunya (with or without capitals), the EU member states and the comunitats
-autònomes of Spain, with their capitals. Correctness of the content matters
+Catalunya (with or without capitals), the comunitats autònomes of Spain, the EU member
+states, the countries of Àfrica, Amèrica (North and Central / South) and Àsia, all with
+their capitals, and the oceans and seas. Correctness of the content matters
 more than polish.
 
+`README.md` describes the app from the learner's side, screen by screen.
 **Read `ARCHITECTURE.md` before changing anything.** It records why several
 non-obvious things are the way they are, and most of those entries were paid for with a
 bug. In particular, do not "simplify" the scheduler's urgency formula, the arc-cutting
@@ -24,6 +26,8 @@ rule, or the deferred `afterRender` map focus without reading the corresponding 
   live in the `art` field in the hints file — never derive them from the name.
 - **Bump `CACHE` in `docs/sw.js`** whenever a shipped file changes, or installed clients
   keep serving the old build.
+- **Content is reviewed by the owner before it ships** — names, capitals, hooks and every
+  photo (via a contact sheet). Work on a branch; `main` deploys.
 
 ## Before saying something works
 
@@ -35,6 +39,7 @@ node build/e2e.mjs             # real Chrome, full session, fails on any console
 Both are fast and need no setup beyond `google-chrome` and `python3`. `SHOTS=1` on the
 e2e writes screenshots to `/tmp/e2e-*.png` — worth looking at, since two real bugs (a
 blank map, clipped labels) were invisible in code and obvious in a screenshot.
+`SHOTS=screenshots` regenerates the README's screenshots after a UI change.
 
 To check what is actually deployed rather than what is local:
 
@@ -53,6 +58,9 @@ adjust the expectation.
 For the EU, `build/fetch-geo-ue.mjs` asserts 27 member states (from GISCO's `EU_STAT`
 flag) and that each one has a Catalan name, capital and article in `ue-hints.js`;
 `build/fetch-geo-esp.mjs` asserts 17 comunitats + Ceuta and Melilla, 17 with a capital.
+`build/fetch-geo-mon.mjs` asserts the place count per continent (Àfrica 55, Amèrica del
+Nord 25, del Sud 13, Àsia 51) and that each has a hints entry; `build/fetch-geo-mar.mjs`
+asserts 5 oceans, every sea, and that each sea's `ocea` matches the IHO grouping.
 
 Two known subtleties, both handled — see `ARCHITECTURE.md`: Cerdanya straddles two
 províncies, and Lluçanès only exists as a comarca since 2023 (the app ships in 42-comarca
