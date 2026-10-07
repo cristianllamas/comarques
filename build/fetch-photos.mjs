@@ -18,7 +18,7 @@
 // what was fetched is refetched automatically. The pinned files below replaced
 // automatic picks that failed review (an empty square, a cropped tower, the wrong town).
 //
-// Run: node build/fetch-photos.mjs ue
+// Run: node build/fetch-photos.mjs ue      (or esp, afr, amn, ams, asi)
 
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { loadTopic } from '../docs/topics.js';

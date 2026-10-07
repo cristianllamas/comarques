@@ -31,10 +31,10 @@ asking `['lloc', 'capital']` and the other only `['lloc']`.
 ### Layers
 
 ```
-                 packs.js        which packs exist, in picker order: topic + facets + title
-                    │
+                 packs.js        which packs exist, in picker order and group: topic +
+                    │            facets + title
                  topics.js       loads a topic's data files and normalises them into one
-                    │            shape: places, context, borders, insets, words, toggle
+                    │            shape: places, context, borders, insets, cover, words, toggle
                     │                 ▲
                     │            data/<topic>-geo.js    (generated)  geometry
                     │            data/<topic>-hints.js  (hand-written) names, articles, hooks
@@ -62,9 +62,10 @@ docs/                     the published site
   map.js                  Mapa: SVG layers, zoom/pan, hit-testing, labels
   quiz.js                 question construction + Catalan grammar  (pure)
   answer.js               answer matching, masked hints            (pure)
-  scheduler.js            Leitner boxes, due-selection, intro order (pure)
+  scheduler.js            Leitner boxes, due-selection, intro order,
+                          session size (pure)
   store.js                localStorage per pack; migrates comarques.v1
-  packs.js                the content packs, in picker order       (pure)
+  packs.js                the content packs and their picker groups (pure)
   topics.js               topic loaders → one normalised shape      (pure)
   styles.css              all styling; light and dark themes
   sw.js                   offline cache
@@ -127,7 +128,7 @@ and `app.js` never know which map they are drawing:
 {
   id, viewBox,
   places: [{
-    code, name, capital,      // capital may be null (Ceuta); "A / B" means two capitals
+    code, name, capital,      // capital may be null (Ceuta); "A / B" (or "A / B / C") is several
     art,                      // article: 'l' | 'el' | 'la' | 'les' | 'els' | 'cap' (none)
     hook,                     // the memory hook
     accepta, accNom,          // extra accepted answers for the capital / the name
@@ -149,6 +150,7 @@ and `app.js` never know which map they are drawing:
   words: {                    // the topic's phrasing — gender and noun differ per topic
     many, whichShape, capitalOfWhich, capitalsOfWhich,
     placeholder, tapToSee, tapHelp, wrongTap(nameWithArticle),
+    oceanPlaceholder,         // seas only: the input hint for "A quin oceà pertany…?"
   },
   toggle,                     // optional on/off option: { label, note, whenOff: { hide, replace } }
 }
@@ -210,6 +212,7 @@ load()  ── a pack remembered? ──yes──► openPack(id) ─► Home
 Packs (picker) ────────── choose ──────────┘
 
 Home ── Comença ─► startSession ─► Repàs ×6 ─► Recorda ×12 (+ requeued misses) ─► Summary
+                                  (fewer in a pack under 18 places: see A session)
   │                                                                                │
   ├── Mira el mapa ─► Study map (browsing; never touches the scheduler)            │
   ├── Opcions ─► toggle, reset this pack                                           │
@@ -257,18 +260,24 @@ One SVG, layered bottom to top:
 
 | Layer | Class | Source | Tappable |
 |---|---|---|---|
-| context | `.contexte` | `topic.context` — neighbouring countries | no |
+| context | `.contexte` | `topic.context` — neighbouring countries (on the seas map, the oceans) | no |
 | insets | `.requadre` | `topic.insets` — opaque box hiding context | no |
 | places | `.zona` | `topic.places[].d` | **yes** |
-| borders | `.provincia` | `topic.borders` | no |
+| borders | `.provincia`, or `.limit` on water maps | `topic.borders` | no |
 | highlights | copies of `.zona` | `raise()` — so a highlight is never under a neighbour's border | no |
-| tap rings | `.anella` | `topic.places[].mark` | **yes** |
+| land | `.terra` | `topic.cover` — water maps only, over the water and its highlights | swallows taps |
+| tap rings | `.anella` | `topic.places[].mark`, radius `markR` or 11 | **yes** |
 | labels | `.etiqueta` | study map only | no |
+
+On the water maps (`topic.water`) the SVG also gets the class `aigua`: places are filled
+as water with no outline, and on a phone the map spans the full screen width.
 
 Zoom and pan only change the `viewBox`; strokes use `vector-effect: non-scaling-stroke`
 so they stay crisp. A tap is resolved with `elementFromPoint` → `.zona, .anella` →
 `data-code`. The toggle (`setToggle`) hides the codes in `whenOff.hide` and swaps in the
-`whenOff.replace` outline (Osona with Lluçanès dissolved).
+`whenOff.replace` outline (Osona with Lluçanès dissolved). `focus()` zooms to a place's
+bounding box, or to its `focus` box when the place is split by the map's edge (the
+Pacific, the mar de Bering).
 
 Study-map labels are laid out on every zoom: largest place first, measured with
 `getBBox`, nudged inside the view, dropped on collision — and if name + capital does not
@@ -278,9 +287,11 @@ fit, the name alone is tried.
 
 ## 4. Building the data
 
-All three geo builds share `topology.mjs` (cut rings into shared arcs, simplify each arc
+All the geo builds share `topology.mjs` (cut rings into shared arcs, simplify each arc
 once) and `geo-lib.mjs` (download/cache, rings, area, centroid, label anchor,
-point-in-polygon, dissolve, clipping, and `processLayer` which runs the whole chain).
+point-in-polygon, dissolve, clipping, and `processLayer` which runs the whole chain). The
+world builds also use its projections (`laea`, `albers`, `gallStereographic`, `relLon`),
+`dissolveMany` and `weldTJunctions`.
 
 | | `fetch-geo.mjs` (cat) | `fetch-geo-esp.mjs` | `fetch-geo-ue.mjs` |
 |---|---|---|---|
@@ -309,14 +320,15 @@ fetch-photos.mjs <topic>  ──►  photos/<topic>/<capital>.jpg + credits.json
 scan-photos.mjs <topic>   ──►  docs/img/<topic>/<code>.jpg (800 px)  +  data/<topic>-photos.js
 ```
 
-`fetch-photos.mjs` holds a hand-reviewed `LANDMARKS` table per topic: the landmark's
+`fetch-photos.mjs` holds a hand-chosen `LANDMARKS` table per topic: the landmark's
 English Wikipedia title, the Catalan caption, and optionally a pinned Commons `file` and
 `retall: 'cap'` (show uncropped). It takes Wikidata's chosen image (P18), falling back to
 the article's lead image, preferring landscape JPEGs, and records author and licence.
 `scan-photos.mjs` matches files to places by name or capital (accents, case, articles
 and hyphens ignored), resizes with ImageMagick, and ships the credits.
 
-The comarques photos were supplied by hand and have no credits.
+The comarques photos were supplied by hand and have no credits. Oceans and seas have no
+photos. The Sàhara Occidental has none either: no usable JPEG was found for it.
 
 ---
 
@@ -361,7 +373,8 @@ regenerates the README's screenshots.
 
 | Where | Constant | Now | Notes |
 |---|---|---|---|
-| `app.js` | `STUDY_CARDS` / `QUIZ_CARDS` | 6 / 12 | session length |
+| `scheduler.js` | `STUDY_CARDS` / `QUIZ_CARDS` | 6 / 12 | session length |
+| `scheduler.js` | `studyCount` | a third of the picks, at most 6 | study cards in a small pack |
 | `scheduler.js` | `BOX_MINUTES` | 20m, 2h, 8h, 1d, 2d, 4d, 8d | intervals per box |
 | `scheduler.js` | `LEECH_WRONG` | 3 | misses before an item is a leech |
 | `scheduler.js` | `COOLDOWN` | 12 min | no repeat within a sitting |
@@ -369,6 +382,8 @@ regenerates the README's screenshots.
 | `fetch-geo-mon.mjs` | `target` per topic | 11000–16000 | the same, per continent |
 | `fetch-geo-mar.mjs` | `TARGET_WATER` / `TARGET_LAND` | 8000 / 12000 | water can be coarse: the land covers its coast |
 | `fetch-geo-*.mjs` | `SMALL` | 400 units² | below this a place gets a tap ring |
+| `fetch-geo-mon/mar.mjs` | `RING` | 11 units, shrunk to 0.48 × the nearest ring (min 4) | tap-ring radius |
+| `fetch-geo-mar.mjs` | `NORTH` / `SOUTH` | 84° / −72° | the world maps' crop |
 
 After changing any scheduler constant, run `node build/sim-scheduler.mjs`.
 
@@ -434,6 +449,8 @@ leak into the other.
 **Old progress is copied, never moved.** `store.js` copies `comarques.v1` into the new
 shape on first load and leaves the original in place. The tag `pre-packs` marks the last
 comarques-only version; rolled back to it, that version finds its data where it left it.
+The tag `pre-world` marks the last four-pack version; the world packs added no new
+storage, so rolling back to it loses nothing but their progress.
 
 **Switching packs lives in the header.** The pack sits above everything else on the home
 screen, so *☰ Packs de contingut* is in the header rather than among the screen's own
@@ -450,18 +467,28 @@ gender with the place tapped.
 
 **Capitals that are never asked.** `capital: null` (Ceuta, Melilla) means no capital
 facet at all. `preguntaCapital: false` keeps the capital on the card but never asks it,
-where the question would answer itself (Luxemburg, Madrid, Múrcia).
+where the question would answer itself (Luxemburg, Madrid, Múrcia, Mèxic, Guatemala,
+Panamà, Djibouti, São Tomé, Kuwait, Singapur). Likewise a sea with `ocea: null` (the
+Caspi) has no ocean facet.
 
-**Two capitals.** A capital written `"A / B"` (Canàries, Vallès Occidental) accepts
-either, reads "A i B" everywhere it is shown, and switches prompts to the plural
-("Quines són les capitals…", "… són les capitals de quina…").
+**Two (or three) capitals.** A capital written `"A / B"` (Canàries, Vallès Occidental,
+Bolívia) accepts either, reads "A i B" everywhere it is shown — "A, B i C" for
+Sud-àfrica's three — and switches prompts to the plural ("Quines són les capitals…",
+"… són les capitals de quina…").
 
 **No official capital.** The País Basc and Castella i Lleó have none in law; the app uses
 the seats of government (Vitòria, Valladolid) — the textbook answer — and the hook says so.
 
 **Neutral prompt for the comunitats.** *"Quina comunitat o ciutat autònoma és la
 destacada?"* for every place: "comunitat" is wrong for Ceuta and Melilla, and naming
-those two "ciutat autònoma" would give the answer away.
+those two "ciutat autònoma" would give the answer away. The continents ask *"Quin país o
+territori…"* for the same reason (Groenlàndia, Puerto Rico, the Sàhara Occidental), and
+the seas *"Quin mar o golf…"*.
+
+**Seas keep the generic noun.** A sea's name is *mar Negre*, *golf Pèrsic*, *oceà
+Pacífic*, with its article (*el*, *l'*), so the grammar works as for any place ("On és el
+mar Negre?"). The bare name (*Negre*) is also accepted, and the first-letter hint treats
+*mar de*, *golf*, *oceà* like an article: "mar de B _ _ _ _ _ _".
 
 **Províncies come from their own layer**, not from dissolving comarques, because
 **Cerdanya straddles Girona and Lleida** (54/46 by area) and a dissolve would put that
@@ -498,7 +525,10 @@ convention; their card says so, so nobody learns they sit off Portugal.
 
 **Tap rings for tiny places.** Malta is about two pixels across at full extent; Ceuta
 and Melilla are similar. Places under `SMALL` units² get a `mark`, drawn as a ring that can
-be seen, tapped, and highlighted with the same classes as the shape.
+be seen, tapped, and highlighted with the same classes as the shape. Where rings would
+overlap (the Lesser Antilles, the Gulf states) the build shrinks them to just under half
+the distance to the nearest one (`markR`), and the e2e asserts no two overlap: a tap on
+an overlap would pick the neighbour.
 
 **Study-map labels: largest place first, collisions dropped.** Not every name fits on a
 phone. Where name + capital will not fit, the name alone is tried before giving up (this
@@ -559,6 +589,11 @@ the one Wikidata's editors chose for it. Even so, many automatic picks failed vi
 review (an empty square, a cropped tower, the wrong town) and are pinned to a specific
 Commons file. Several landmarks outside the capital were chosen on purpose (the Alhambra,
 the Guggenheim, León cathedral).
+
+**The world packs' photos were not reviewed by the owner** (waived for that round).
+They were chosen by hand and checked on contact sheets; eight automatic picks were
+replaced (satellite views, a thin panorama strip, an old print). A natural landmark's
+caption names its region instead of a city (*Cascades Victòria*).
 
 **Every Commons photo has a caption that names the city**, so a landmark outside the
 capital is never taken for one in it, plus the author and licence its licence requires,
@@ -646,7 +681,14 @@ quote finds nothing; the `LANDMARKS` titles use `'`.
 
 **The e2e can be wrong too.** Twice while adding the packs a failure was the test, not the app: tapping
 the centre of an archipelago's bounding box lands in the sea, and "País Basc" matches a
-naive /país/ check. Read the failure before changing the app.
+naive /país/ check. Adding the world packs, it happened twice more: /Capital:/ failed
+whenever the shuffled first card had two capitals ("Capitals:"), and counting distinct
+prompts under-counted the oceans' "Quin oceà és el destacat?". Read the failure before
+changing the app.
+
+**A push does not always rebuild Pages.** After the world packs were merged, no Pages
+build started at all. Check `pages/builds/latest` names the commit you pushed; if it
+does not, request one with `gh api -X POST repos/cristianllamas/comarques/pages/builds`.
 
 ---
 
@@ -675,11 +717,18 @@ naive /país/ check. Read the failure before changing the app.
 
 **Replace a photo** — set `file:` on its `LANDMARKS` entry (it is refetched
 automatically), adjust the caption if needed, run `fetch-photos.mjs` and
-`scan-photos.mjs`, and look at the result: an automatic pick is not a reviewed one.
+`scan-photos.mjs`, and look at the result: an automatic pick is not a reviewed one. To
+try a different `title` instead, delete the old file in `photos/<topic>/` and its entry
+in `credits.json` first (or run with `FORCE=1` to refetch the whole topic).
 
 **Add a question type** — a `kind` in `quiz.js:buildQuestion`, handled in
 `app.js:screenQuiz`. Map-answered kinds follow `tap-map` (`enablePicking(true)`,
 `mapa.onPick`); typed kinds get the climb-down for free. Decide which facet it belongs to.
+
+**Add a facet** — follow `ocea`: a field per place in the hints, carried by
+`topics.js`; the filter in `activePairs` (which places have it); a branch in
+`buildQuestion` and the field in `options()`; the card line in `app.js:placeCard` and
+`solution()`; the facet in the pack's `facets`.
 
 **Add a field per place** (population, rivers, …) — emit it from the geo build if it is
 derived, or write it in the hints file if it is editorial; carry it through `topics.js`.

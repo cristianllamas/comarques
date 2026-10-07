@@ -13,7 +13,7 @@
 // licence credit for each photo are shipped with it as CREDITS, and the app shows them
 // under the photo. Photos you add by hand need no entry.
 //
-// Run: node build/scan-photos.mjs cat
+// Run: node build/scan-photos.mjs cat      (or esp, ue, afr, amn, ams, asi)
 
 import { readdirSync, mkdirSync, writeFileSync, copyFileSync, readFileSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -21,7 +21,7 @@ import { extname, basename, join } from 'node:path';
 import { loadTopic } from '../docs/topics.js';
 
 const TOPIC = process.argv[2];
-if (!TOPIC) { console.error('usage: node build/scan-photos.mjs <topic>   (e.g. cat)'); process.exit(2); }
+if (!TOPIC) { console.error('usage: node build/scan-photos.mjs <topic>   (cat, esp, ue, afr, amn, ams, asi)'); process.exit(2); }
 const { places } = await loadTopic(TOPIC);
 
 const SRC = `photos/${TOPIC}`;
